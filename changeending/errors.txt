@@ -1,0 +1,102 @@
+In file included from norepeats.cpp:23:
+/usr/include/OpenStringLib.h: In member function ‘const int cString::AtoI() const’:
+/usr/include/OpenStringLib.h:91: error: ‘atoi’ was not declared in this scope
+/usr/include/OpenStringLib.h: In member function ‘const cString cString::AtoSI() const’:
+/usr/include/OpenStringLib.h:92: error: ‘atoi’ was not declared in this scope
+/usr/include/OpenStringLib.h: In member function ‘const long int cString::AtoL() const’:
+/usr/include/OpenStringLib.h:93: error: ‘atol’ was not declared in this scope
+/usr/include/OpenStringLib.h: In member function ‘const double cString::AtoF() const’:
+/usr/include/OpenStringLib.h:94: error: ‘atof’ was not declared in this scope
+In file included from norepeats.cpp:23:
+/usr/include/OpenStringLib.h: In member function ‘int cString::Length() const’:
+/usr/include/OpenStringLib.h:123: error: ‘strlen’ was not declared in this scope
+/usr/include/OpenStringLib.h: In member function ‘int cString::length() const’:
+/usr/include/OpenStringLib.h:124: error: ‘strlen’ was not declared in this scope
+/usr/include/OpenStringLib.h: In member function ‘bool cString::Contains(const cString&) const’:
+/usr/include/OpenStringLib.h:125: error: ‘strstr’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator==(const cString&, const cString&)’:
+/usr/include/OpenStringLib.h:377: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator!=(const cString&, const cString&)’:
+/usr/include/OpenStringLib.h:381: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator<(const cString&, const cString&)’:
+/usr/include/OpenStringLib.h:385: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator>(const cString&, const cString&)’:
+/usr/include/OpenStringLib.h:389: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator<=(const cString&, const cString&)’:
+/usr/include/OpenStringLib.h:393: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator>=(const cString&, const cString&)’:
+/usr/include/OpenStringLib.h:397: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator==(const cString&, const char*)’:
+/usr/include/OpenStringLib.h:402: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator!=(const cString&, const char*)’:
+/usr/include/OpenStringLib.h:406: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator<(const cString&, const char*)’:
+/usr/include/OpenStringLib.h:410: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator>(const cString&, const char*)’:
+/usr/include/OpenStringLib.h:414: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator<=(const cString&, const char*)’:
+/usr/include/OpenStringLib.h:418: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator>=(const cString&, const char*)’:
+/usr/include/OpenStringLib.h:422: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator==(const char*, const cString&)’:
+/usr/include/OpenStringLib.h:427: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator!=(const char*, const cString&)’:
+/usr/include/OpenStringLib.h:431: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator<(const char*, const cString&)’:
+/usr/include/OpenStringLib.h:435: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator>(const char*, const cString&)’:
+/usr/include/OpenStringLib.h:439: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator<=(const char*, const cString&)’:
+/usr/include/OpenStringLib.h:443: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator>=(const char*, const cString&)’:
+/usr/include/OpenStringLib.h:447: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator==(const cString&, std::string)’:
+/usr/include/OpenStringLib.h:452: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator!=(const cString&, std::string)’:
+/usr/include/OpenStringLib.h:456: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator<(const cString&, std::string)’:
+/usr/include/OpenStringLib.h:460: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator>(const cString&, std::string)’:
+/usr/include/OpenStringLib.h:464: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator<=(const cString&, std::string)’:
+/usr/include/OpenStringLib.h:468: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator>=(const cString&, std::string)’:
+/usr/include/OpenStringLib.h:472: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator==(std::string, const cString&)’:
+/usr/include/OpenStringLib.h:477: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator!=(std::string, const cString&)’:
+/usr/include/OpenStringLib.h:481: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator<(std::string, const cString&)’:
+/usr/include/OpenStringLib.h:485: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator>(std::string, const cString&)’:
+/usr/include/OpenStringLib.h:489: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator<=(std::string, const cString&)’:
+/usr/include/OpenStringLib.h:493: error: ‘strcmp’ was not declared in this scope
+/usr/include/OpenStringLib.h: In function ‘bool operator>=(std::string, const cString&)’:
+/usr/include/OpenStringLib.h:497: error: ‘strcmp’ was not declared in this scope
+In file included from norepeats.cpp:23:
+/usr/include/OpenStringLib.h: In member function ‘int cDualList::Length() const’:
+/usr/include/OpenStringLib.h:1119: error: ‘exit’ was not declared in this scope
+In file included from norepeats.cpp:23:
+/usr/include/OpenStringLib.h: In static member function ‘static bool cExec::System(cString, bool)’:
+/usr/include/OpenStringLib.h:1635: error: ‘system’ was not declared in this scope
+/usr/include/OpenStringLib.h: In static member function ‘static bool cExec::ExecWhileWaiting3(cString, cString, cString)’:
+/usr/include/OpenStringLib.h:1732: error: ‘exit’ was not declared in this scope
+/usr/include/OpenStringLib.h:1749: error: ‘exit’ was not declared in this scope
+/usr/include/OpenStringLib.h: In static member function ‘static bool cExec::ExecWhileWaiting2(cString, cString, cString)’:
+/usr/include/OpenStringLib.h:1773: error: ‘exit’ was not declared in this scope
+/usr/include/OpenStringLib.h:1788: error: ‘exit’ was not declared in this scope
+/usr/include/OpenStringLib.h: In static member function ‘static bool cExec::ExecWhileWaiting(cString, cString, cString)’:
+/usr/include/OpenStringLib.h:1812: error: ‘exit’ was not declared in this scope
+/usr/include/OpenStringLib.h:1828: error: ‘exit’ was not declared in this scope
+/usr/include/OpenStringLib.h: In member function ‘bool cKeyboard::init()’:
+/usr/include/OpenStringLib.h:1900: error: ‘system’ was not declared in this scope
+/usr/include/OpenStringLib.h: In member function ‘bool cKeyboard::release()’:
+/usr/include/OpenStringLib.h:1905: error: ‘system’ was not declared in this scope
+norepeats.cpp: At global scope:
+norepeats.cpp:31: error: expected class-name before ‘{’ token
+norepeats.cpp: In function ‘void processcmdline(int, char**, cProp&)’:
+norepeats.cpp:106: error: ‘exit’ was not declared in this scope
+norepeats.cpp:110: error: ‘exit’ was not declared in this scope
+norepeats.cpp:114: error: ‘exit’ was not declared in this scope
+make: *** [norepeats.o] Error 1

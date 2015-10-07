@@ -1,0 +1,42 @@
+#***************************************************************
+# * (C) Copyright 1998-2011 Chris Delezenski
+# * This software is released under the LGPL v2, see COPYING and LGPL
+# ***************************************************************/
+
+NAME=OpenString
+#CXXFLAGS=-g -Werror -Wall 
+CXXFLAGS=-g -Wall 
+CC=g++
+LIBRARY=lib$(NAME).a
+SRCS=$(wildcard *.cpp)
+OBJS=$(subst .cpp,.o,$(SRCS))
+HDRS=master.h dynstring.h stringlist.h vectorlist.h  duallist.h   fileunit.h filelist.h timeanddate.h executive.h keyboard.h phptranslation.h
+SPEC=$(NAME).spec
+ARCH=$(shell ./myarch.sh)
+
+all: makehead $(LIBRARY) 
+
+
+$(LIBRARY): $(OBJS) 
+	ar rcs $(LIBRARY) $(OBJS)
+
+makehead:
+	cat $(HDRS) > $(NAME)Lib.h
+	echo "#endif" >>$(NAME)Lib.h
+
+clean: 
+	rm -rf $(LIBRARY) *.o core 
+
+install: all
+	
+	cp $(LIBRARY) /usr/$(shell ./libarch.sh)/
+	cp $(NAME)Lib.h /usr/include/
+	cp mysqlpp.h /usr/include/
+	cp curlpp.h /usr/include/
+	/sbin/ldconfig
+
+$(OBJS): $(HDRS)
+
+diffs: 
+	svn diff >diffs.txt
+	nedit diffs.txt&

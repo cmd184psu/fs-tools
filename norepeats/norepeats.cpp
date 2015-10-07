@@ -1,7 +1,7 @@
  /*
     norepeats.cpp - Seeks out all files that are identical based on an independent md5 hash.
     Prints to stdout suggested deletions.
-    Copyright (C) 2003  Chris Delezenski
+    Copyright (C) 2015  Chris Delezenski
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,11 +23,7 @@
 #include <stdlib.h>
 #include <OpenStringLib.h>
 
-#ifndef __USE__CVS__
-#define VERSION "(Part of Dev Tools) Norepeats v0.93 - 12-09-03 - written by Chris Delezenski"
-#else
-#define VERSION "$id$ - written by Chris Delezenski"
-#endif 
+#define VERSION "(Part of Dev Tools) Norepeats v0.95 - 10-06-15 - written by Chris Delezenski"
 
 
 void usage() {
@@ -236,7 +232,7 @@ void lookfordups(cString wildcard, cString cache, cString hint, bool loadfromcac
 
 int main(int argc, char* argv[]) {
 
-	cerr<<"Dec 22nd, 2013"<<endl;
+	cerr<<"Oct 06th, 2015"<<endl;
 	cArgs arguments(argc,argv,"-");
 	
 	

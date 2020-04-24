@@ -6,13 +6,13 @@
 #CFLAGS=-g -O2 -Wall -Werror  $(INCLUDES) $(EXTRAINCLUDES) $(DEFS)
 CFLAGS=-g -O2 -Wall $(INCLUDES) $(EXTRAINCLUDES) $(DEFS)
 CPPFLAGS=$(CFLAGS)
-INCLUDES=-I./ -I../ -I/usr/include
+INCLUDES=-I./ -I../ -I/usr/include -I../OpenStringLibrary
 CC=gcc
 VER=0.3
 NAME=norepeats
 OTHERLIBES=
 LIBES= -lstdc++ -lOpenString
-LFLAGS= -L../ -L/usr/lib
+LFLAGS= -L../ -L/usr/lib -L../OpenStringLibrary
 INSTALLDIR=/usr/bin/
 TESTDIR=../TEST/$(NAME)
 COMPRESSED=/usr/src/redhat/SOURCES/$(NAME)-$(VER).tgz

@@ -1,7 +1,7 @@
  /*
     norepeats.cpp - Seeks out all files that are identical based on an independent md5 hash.
     Prints to stdout suggested deletions.
-    Copyright (C) 2015  Chris Delezenski
+    Copyright (C) 2020  Chris Delezenski
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <OpenStringLib.h>
 
-#define VERSION "(Part of Dev Tools) Norepeats v0.95 - 10-06-15 - written by Chris Delezenski"
+#define VERSION "(Part of Dev Tools) Norepeats v0.96 - 1-25-20 - written by Chris Delezenski"
 
 
 void usage() {
@@ -46,7 +46,7 @@ cString BashFriendly(cString input) {
 
 
 cString gethash(cString filename) {
-	FILE*t=NULL;
+//	FILE*t=NULL;
 	
 	cString newfilename=filename;
 	bool catchit=false;
@@ -63,18 +63,27 @@ cString gethash(cString filename) {
 		newfilename=filename.Replace("]","\\]");
 	}
 	*/
-	cString cmd="md5sum \""+newfilename+"\"";
-	char tempcharstar[1024]="";
+	//cString cmd="md5sum \""+newfilename+"\"";
+	cString cmd="md5 \""+newfilename+"\"";
+	//char tempcharstar[1024]="";
 	if (catchit) {
 		cerr<<"cmd="<<cmd<<endl;
 	}
-	t=popen(cmd,"r");
-	fscanf(t,"%s",tempcharstar);
 	
-	pclose(t);
+	//MD5 (whatever.txt) = b3ec0bd9b34f8508ee0376361ce5c281
 	
+	cStringList popencli;
+	cString temp;
+	popencli.FromPopen(cmd);
+
+	cerr<<"# "<<popencli.ToString(' ')<<endl;
+	temp=popencli.ToString(' ');
+	
+	popencli.FromString(temp,' ');
+	cerr<<"# "<<popencli[-1]<<endl;
+
 	if(catchit) exit(0);
-	return cString(tempcharstar);
+	return popencli[-1];
 }
 
 void FileList_R(cStringList &mylist, cString fullpath, cString ending) {
@@ -93,6 +102,7 @@ void FileandHashList(cDualList &mylist, cString fullpath, cString ending) {
 	for(int i=0; i<temp.Length(); i++) {
 		cerr<<"\rprocessing "<<i<<" of "<<temp.Length();
 		temphash=gethash(temp[i]);
+		//cerr<<"hash retrieved: "<<temphash<<endl;
 		mylist[temp[i]]=temphash;
 	}
 }
@@ -204,7 +214,7 @@ void lookfordups(cString wildcard, cString cache, cString hint, bool loadfromcac
 
 					if(thelist.GetValFromIndex(i)==thelist.GetValFromIndex(j) && i!=j) {
 						cout<<endl<<"# "<<thelist.GetName(i)<<" and "<<thelist.GetName(j)<<" contain the same data"<<endl;
-						
+						cout<<"# "<<thelist.GetValFromIndex(i)<<" == "<<thelist.GetValFromIndex(j)<<endl;
 						if(APreferredKeepOverB(thelist.GetName(i),thelist.GetName(j),hint)) {
 							cout<<"rm -rvf "<<BashFriendly(thelist.GetName(j))<<endl; 		
 							thelist[j]="";
@@ -232,7 +242,7 @@ void lookfordups(cString wildcard, cString cache, cString hint, bool loadfromcac
 
 int main(int argc, char* argv[]) {
 
-	cerr<<"Oct 06th, 2015"<<endl;
+	cerr<<"Jan 24th, 2020"<<endl;
 	cArgs arguments(argc,argv,"-");
 	
 	

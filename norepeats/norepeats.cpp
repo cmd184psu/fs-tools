@@ -179,7 +179,7 @@ bool APreferredKeepOverB(cString a, cString b, cString hint) {
 //		cerr<<"returning because a contains hint "<<hint<<endl;
 	return a.Contains(hint);
 	}
-	if(b.Contains("copy") || b.Contains("-b.") || b.Contains("temp") || b.Contains("junk") || b.Contains("unsorted")) {
+	if(b.Contains("copy") || b.Contains("-b.") || b.Contains("temp") || b.Contains("junk") || b.Contains("unsorted") || b.Contains("incoming") || b.Contains("newdir")) {
 ///		cerr<<"returning because of something in b: "<<b<<endl;
 		 return true;
 	}

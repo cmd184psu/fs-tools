@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <OpenStringLib.h>
 
-#define VERSION "(Part of Dev Tools) Norepeats v0.96 - 1-25-20 - written by Chris Delezenski"
+#define VERSION "(Part of Dev Tools) Norepeats v0.97 - 4-25-20 - written by Chris Delezenski"
 
 
 void usage() {
@@ -179,7 +179,7 @@ bool APreferredKeepOverB(cString a, cString b, cString hint) {
 //		cerr<<"returning because a contains hint "<<hint<<endl;
 	return a.Contains(hint);
 	}
-	if(b.Contains("copy") || b.Contains("-b.") || b.Contains("temp") || b.Contains("junk") || b.Contains("unsorted") || b.Contains("incoming") || b.Contains("newdir")) {
+	if(b.Contains("copy") || b.Contains("-b.") || b.Contains("temp") || b.Contains("junk") || b.Contains("unsorted") || b.Contains("incoming") || b.Contains("newdir") || !b.Contains("expenses/")) {
 ///		cerr<<"returning because of something in b: "<<b<<endl;
 		 return true;
 	}

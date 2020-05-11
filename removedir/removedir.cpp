@@ -22,17 +22,17 @@ using namespace std;
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include <OpenStringLib.h>
+#include "../OpenStringLibrary/OpenStringLib.h"
 
 #ifndef __USE__CVS__
-#define VERSION "(Part of Dev Tools) Norepeats v0.93 - 12-09-03 - written by Chris Delezenski"
+#define VERSION "(Part of Dev Tools) RemoveDir v0.3 - 5-10-20 - written by Chris Delezenski"
 #else
 #define VERSION "$id$ - written by Chris Delezenski"
 #endif 
 
 
 void usage() {
-	cout<<"USAGE: norepeats -w [*.ext] generates a batch file to stdout, errors to stderr"<<endl;
+	cout<<"USAGE: removedir generates a batch file to stdout, errors to stderr"<<endl;
 }
 
 cString gethash(cString filename) {
@@ -186,7 +186,7 @@ void lookfordups() {
 
 
 int main(int argc, char* argv[]) {
-	cerr<<"January 1,2014"<<endl;
+	cerr<<"May 10, 2020"<<endl;
 	cout<<"#!/bin/sh"<<endl;
 	cerr<<"process"<<endl;
 	lookfordups();

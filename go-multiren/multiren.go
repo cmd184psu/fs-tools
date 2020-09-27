@@ -114,7 +114,8 @@ func main() {
 	containsdate := FileContainsDate(basefilename)
 
 	if removedate && containsdate {
-		basefilename = basefilename[0 : len(basefilename)-len(modtime)]
+		basefilename = basefilename[0 : len(basefilename)-(len(modtime)+1)]
+
 		newfilename = basefilename + strings.ToLower(ext)
 	} else if containsdate {
 		newfilename = basefilename + strings.ToLower(ext)

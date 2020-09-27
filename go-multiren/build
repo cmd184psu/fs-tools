@@ -8,6 +8,90 @@ fi
 
 EXE=multiren
 
-go build *.go
+if ! go build *.go; then
+	echo "build failed"
+	exit 1
+fi
 
-sudo install -m 755 $EXE $INSTALLDIR
+
+if [ "$1" == "-install" ]; then
+	sudo install -v -s -m 755 $EXE $INSTALLDIR
+	which $EXE
+	$EXE -version
+	exit 0
+fi
+
+declare -a mnames
+mnames=(invalid Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)
+TESTFILE="localtextfile.txt"
+
+if [ "$1" == "-test" ]; then
+	YEAR=`date +%Y`
+	DAY=`date +%d`
+	MONTH=`date +%m`
+	if [ "${MONTH:0:1}" == "0" ]; then
+    	MONTH=${MONTH:1:1}
+	fi
+	MONTH=${mnames[${MONTH}]}
+
+#	TESTDATE=`date +%
+	touch "$TESTFILE"
+	TESTPATH="path/to/new/location"
+	MODDATE="-${DAY}${MONTH}${YEAR}"
+	TESTFILE_JUSTFILE=$(basename -- "$TESTFILE")
+
+	if [[ "$TESTFILE_JUSTFILE" == *".tar.gz" ]]; then
+		TESTFILE_EXT="tar.gz"
+		TESTFILE_JUSTFILE="${TESTFILE_JUSTFILE%.*}"
+	else
+		TESTFILE_EXT="${TESTFILE_JUSTFILE##*.}"
+	fi
+	TESTFILE_JUSTFILE="${TESTFILE_JUSTFILE%.*}"
+	TESTFILE_JUSTFILE_NOSPACES=`gecho "${TESTFILE_JUSTFILE}" | sed 's/ /-/g'`
+
+	gecho "====== TEST 1: move to new location ======"
+	gecho -e "./$EXE -filename \"${TESTFILE}\" -newpath $TESTPATH -verbose | sh"
+	./$EXE -filename "${TESTFILE}" -newpath $TESTPATH -verbose |sh
+	gecho -e "if [ -e \"$TESTPATH/${TESTFILE_JUSTFILE}${MODDATE}.${TESTFILE_EXT}\" ]; then (we good)"
+	if [ -e "$TESTPATH/${TESTFILE_JUSTFILE}${MODDATE}.${TESTFILE_EXT}" ]; then
+		echo "passing test 1"
+	else
+		echo "failed on test 1"
+		exit 1
+	fi
+
+	gecho "mv -v \"${TESTPATH}/${TESTFILE_JUSTFILE}${MODDATE}.${TESTFILE_EXT}\" ."
+	mv -v "${TESTPATH}/${TESTFILE_JUSTFILE}${MODDATE}.${TESTFILE_EXT}" .
+	gecho
+	gecho "====== TEST 2: remove date stamp ======"
+
+	gecho -e "./$EXE -filename \"${TESTFILE_JUSTFILE}${MODDATE}.${TESTFILE_EXT}\" -removedate -verbose | sh"
+	./$EXE -filename "${TESTFILE_JUSTFILE}${MODDATE}.${TESTFILE_EXT}" -removedate -verbose | sh
+
+	gecho -e "if [ -e \"./${TESTFILE_JUSTFILE}.${TESTFILE_EXT}\" ]; then (we good)"
+	if [ -e "./${TESTFILE_JUSTFILE}.${TESTFILE_EXT}" ]; then
+	 	echo "passing test 2"
+	else
+	 	echo "failed on test 2"
+	 	exit 1
+	fi
+
+	gecho
+	gecho "====== TEST 3: remove spaces stamp ======"
+
+	gecho "./$EXE -filename \"${TESTFILE_JUSTFILE}.${TESTFILE_EXT}\" -nospaces -verbose | sh"
+	./$EXE -filename "${TESTFILE_JUSTFILE}.${TESTFILE_EXT}" -nospaces -verbose | sh
+
+	gecho -e "if [ -e \"./${TESTFILE_JUSTFILE_NOSPACES}${MODDATE}.${TESTFILE_EXT}\" ]; then (we good)"
+	if [ -e "./${TESTFILE_JUSTFILE_NOSPACES}${MODDATE}.${TESTFILE_EXT}" ]; then
+	 	echo "passing test 3"
+	else
+	 	echo "failed on test 3"
+	 	exit 1
+	fi
+	gecho 
+	gecho "====== clean up ======"
+	rm -vf ${TESTFILE_JUSTFILE_NOSPACES}${MODDATE}.${TESTFILE_EXT}
+	rmdir -p ${TESTPATH}
+	gecho "====== All tests passing ======"
+fi

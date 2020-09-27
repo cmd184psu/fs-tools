@@ -46,6 +46,8 @@ func FileContainsDate(f string) bool {
 //step 5: construct new path, print mv statement to screen
 
 func main() {
+	const VERSION = "Multi-renamer (c) C Delezenski <cmd184psu@gmail.com> - 27Sept2020"
+
 	var filename string
 	flag.StringVar(&filename, "filename", "", "file path to parse")
 
@@ -58,6 +60,10 @@ func main() {
 	var verbose bool
 	flag.BoolVar(&verbose, "verbose", false, "verbose move")
 
+	var ver bool
+	flag.BoolVar(&ver, "ver", false, "show version")
+	flag.BoolVar(&ver, "version", false, "show version")
+
 	var removedate bool
 	flag.BoolVar(&removedate, "removedate", false, "remove date from filename")
 
@@ -65,7 +71,10 @@ func main() {
 	flag.StringVar(&newpath, "newpath", "", "new file path to move into")
 
 	flag.Parse()
-
+	if ver {
+		fmt.Println(VERSION)
+		os.Exit(0)
+	}
 	if filename == "" {
 		fmt.Println("Missing parameter: filename")
 		os.Exit(1)

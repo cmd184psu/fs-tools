@@ -1,0 +1,13 @@
+#!/bin/sh
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	INSTALLDIR=/usr/local/bin/
+else
+	INSTALLDIR=/usr/bin/
+fi
+
+EXE=multiren
+
+go build *.go
+
+sudo install -m 755 $EXE $INSTALLDIR

@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <OpenStringLib.h>
 
-#define VERSION "(Part of Dev Tools) Norepeats v0.97 - 4-25-20 - written by Chris Delezenski"
+#define VERSION "(Part of Dev Tools) Norepeats v0.99 - 9-12-20 - written by Chris Delezenski"
 
 
 void usage() {
@@ -86,19 +86,21 @@ cString gethash(cString filename) {
 	return popencli[-1];
 }
 
-void FileList_R(cStringList &mylist, cString fullpath, cString ending) {
+void FileList_R(cStringList &mylist, cString fullpath, cString ending, bool everything) {
 	if(fullpath[0]=='/') chdir("/");
 	cString cmd="find \""+fullpath+"\" -type f -iname \""+ending+"\"";
+
+	if(!everything) cmd+=" -size -1G";
 	FILE *t=popen(cmd, "r" );
 	mylist.FromFile(t);
 	pclose(t);
 	mylist.UCompact();
 }
 
-void FileandHashList(cDualList &mylist, cString fullpath, cString ending) {
+void FileandHashList(cDualList &mylist, cString fullpath, cString ending,bool everything) {
 	cStringList temp;
 	cString temphash;
-	FileList_R(temp,fullpath,ending);
+	FileList_R(temp,fullpath,ending,everything);
 	for(int i=0; i<temp.Length(); i++) {
 		cerr<<"\rprocessing "<<i<<" of "<<temp.Length();
 		temphash=gethash(temp[i]);
@@ -107,31 +109,34 @@ void FileandHashList(cDualList &mylist, cString fullpath, cString ending) {
 	}
 }
 
-void FileList_1(cStringList &mylist, cString fullpath, cString ending) {
+void FileList_1(cStringList &mylist, cString fullpath, cString ending, bool everything) {
 	if(fullpath[0]=='/') chdir("/");
 	cString cmd="find \""+fullpath+"\" -follow -type f -maxdepth 1 -iname \""+ending+"\"";
+
+	if(!everything) cmd+=" -size -1G";
+
 	pclose(mylist.FromFile(popen(cmd, "r" )));
 	mylist.UCompact();
 }
 
-void FileList_1(cStringList &mylist, cString fullpath) {
+void FileList_1(cStringList &mylist, cString fullpath, bool everything) {
 	cStringList split;
 	if(fullpath.Contains('*')) 
 		split.FromString(fullpath,"*.");
 	else
 		split.FromString(fullpath,".");
 		
-	FileList_1(mylist,fullpath.ChopRt('/'),fullpath.ChopAllLf('/'));
+	FileList_1(mylist,fullpath.ChopRt('/'),fullpath.ChopAllLf('/'), everything);
 }
 
-void FileList_R(cStringList &mylist, cString fullpath) {
+void FileList_R(cStringList &mylist, cString fullpath,bool everything) {
 	cStringList split;
 //	cerr<<"fullpath="<<fullpath<<endl;
 	if(fullpath.Contains('*')) 
 		split.FromString(fullpath,"*.");
 	else
 		split.FromString(fullpath,".");
-	FileList_R(mylist,fullpath.ChopRt('/'),fullpath.ChopAllLf('/'));
+	FileList_R(mylist,fullpath.ChopRt('/'),fullpath.ChopAllLf('/'),everything);
 }
 /*
 void processcmdline(int argc,char *argv[], cProp & switches) {
@@ -179,7 +184,7 @@ bool APreferredKeepOverB(cString a, cString b, cString hint) {
 //		cerr<<"returning because a contains hint "<<hint<<endl;
 	return a.Contains(hint);
 	}
-	if(b.Contains("copy") || b.Contains("-b.") || b.Contains("temp") || b.Contains("junk") || b.Contains("unsorted") || b.Contains("incoming") || b.Contains("newdir") || !b.Contains("expenses/")) {
+	if(b.Contains("copy") || b.Contains("-b.") || b.Contains("temp") || b.Contains("junk") || b.Contains("unsorted") || b.Contains("incoming") || b.Contains("newdir") || b.ToLower().Contains("frozen") || !b.Contains("expenses/")) {
 ///		cerr<<"returning because of something in b: "<<b<<endl;
 		 return true;
 	}
@@ -187,15 +192,12 @@ bool APreferredKeepOverB(cString a, cString b, cString hint) {
 	return (a.Length()<b.Length());
 }
 
-void lookfordups(cString wildcard, cString cache, cString hint, bool loadfromcache) {
+void lookfordups(cString wildcard, cString hint, bool force, bool everything) {
 	cDualList thelist;
 	
-	if(loadfromcache) {
-		if(cache!="") thelist.FromFile(cache);
-	} else {
-		FileandHashList(thelist,"./",wildcard);
-		if(cache!="") thelist.ToFile(cache);
-	}
+	
+	FileandHashList(thelist,"./",wildcard,everything);
+		
 	cString progressFile="norepeats-progress.txt";
 	int hits=0;
 	int donothing=3;
@@ -215,6 +217,7 @@ void lookfordups(cString wildcard, cString cache, cString hint, bool loadfromcac
 					if(thelist.GetValFromIndex(i)==thelist.GetValFromIndex(j) && i!=j) {
 						cout<<endl<<"# "<<thelist.GetName(i)<<" and "<<thelist.GetName(j)<<" contain the same data"<<endl;
 						cout<<"# "<<thelist.GetValFromIndex(i)<<" == "<<thelist.GetValFromIndex(j)<<endl;
+						if(force) cout<<"sudo ";
 						if(APreferredKeepOverB(thelist.GetName(i),thelist.GetName(j),hint)) {
 							cout<<"rm -rvf "<<BashFriendly(thelist.GetName(j))<<endl; 		
 							thelist[j]="";
@@ -242,7 +245,7 @@ void lookfordups(cString wildcard, cString cache, cString hint, bool loadfromcac
 
 int main(int argc, char* argv[]) {
 
-	cerr<<"Jan 24th, 2020"<<endl;
+	cerr<<"Sep 12th, 2020"<<endl;
 	cArgs arguments(argc,argv,"-");
 	
 	
@@ -252,7 +255,6 @@ int main(int argc, char* argv[]) {
 	if(arguments.IsSet("h"))
 		hint=arguments.GetArg("h",1);
 	
-	bool loadfromcache=arguments.IsSet("l");
 	cStringList wildcardlist;
 	
 	cout<<"#!/bin/sh"<<endl;
@@ -262,12 +264,13 @@ int main(int argc, char* argv[]) {
 	
 	if(wildcard=="") wildcard="*";
 	
+	//new option: -e gives you all files; without it, limit scans to < 1 GB files
 	
 	if(!wildcard.Contains(';')) {
-		 lookfordups(wildcard,"cache.txt",hint, loadfromcache);
+		 lookfordups(wildcard,hint,arguments.IsSet("f"),arguments.IsSet("e"));
 	} else {
 		wildcardlist.FromString(wildcard,';');
-		for(int i=0; i<wildcardlist.Length(); i++) lookfordups(wildcardlist[i],"",hint,false);
+		for(int i=0; i<wildcardlist.Length(); i++) lookfordups(wildcardlist[i],hint,arguments.IsSet("f"),arguments.IsSet("e"));
 	}	
 	
 	return 0;

@@ -188,7 +188,7 @@ bool InFiltersList(cStringList filters, cString target) {
 }
 
 
-void lookfordups(cString wildcard,bool usedirs, bool destroy_all_links, bool exec_only) {
+void lookfordups(cString wildcard,bool usedirs, bool destroy_all_links, bool exec_only, bool force) {
 
 	cerr<<"wildcard="<<wildcard<<endl;
 
@@ -225,8 +225,10 @@ void lookfordups(cString wildcard,bool usedirs, bool destroy_all_links, bool exe
 			if(!exec_only || isExecutive(thelist.GetName(i),exec_only)) {
 				cout<<endl<<"# "<<thelist.GetName(i)<<" matches criteria for deletion"<<endl;
 				
-				
+				cout<<"sudo xattr -c "<<BashFriendly(thelist.GetName(i))<<endl;
+				cout<<"sudo chmod -N "<<BashFriendly(thelist.GetName(i))<<endl;
 			//	if(!InFiltersList(filters,thelist.GetName(i))) {
+				if(force) cout<<"sudo ";
 					cout<<"rm -rvf "<<BashFriendly(thelist.GetName(i))<<endl;
 			//	} else {
 			//		cout<<"# skipping "<<BashFriendly(thelist.GetName(i))<<" because of filter"<<endl;
@@ -247,7 +249,7 @@ void lookfordups(cString wildcard,bool usedirs, bool destroy_all_links, bool exe
 
 int main(int argc, char* argv[]) {
 
-	cerr<<"April 23rd, 2014"<<endl;
+	cerr<<"Sept 5th, 2020"<<endl;
 	cArgs arguments(argc,argv,"-");
 	
 	
@@ -282,12 +284,12 @@ int main(int argc, char* argv[]) {
 	
 	
 	if(!wildcard.Contains(';')) {
-		 if(arguments.IsSet("d") || arguments.IsSet("b")) lookfordups(wildcard,true,destroy_all_links,arguments.IsSet("e"));
-		 if(!arguments.IsSet("d") || arguments.IsSet("b")) lookfordups(wildcard,false,destroy_all_links,arguments.IsSet("e"));
+		 if(arguments.IsSet("d") || arguments.IsSet("b")) lookfordups(wildcard,true,destroy_all_links,arguments.IsSet("e"),arguments.IsSet("f"));
+		 if(!arguments.IsSet("d") || arguments.IsSet("b")) lookfordups(wildcard,false,destroy_all_links,arguments.IsSet("e"),arguments.IsSet("f"));
 		 
 	} else {
 		wildcardlist.FromString(wildcard,';');
-		for(int i=0; i<wildcardlist.Length(); i++) lookfordups(wildcardlist[i],usedirs,destroy_all_links,arguments.IsSet("e"));
+		for(int i=0; i<wildcardlist.Length(); i++) lookfordups(wildcardlist[i],usedirs,destroy_all_links,arguments.IsSet("e"),arguments.IsSet("f"));
 	}
 	
 	

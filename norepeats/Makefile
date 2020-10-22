@@ -1,7 +1,7 @@
 # 
 # Makefile for norepeats
 # written by Chris Delezenski
-# GPL'ed (c) 2000-2004 Chris Delezenski
+# GPL'ed (c) 2000-2020 Chris Delezenski
 
 #CFLAGS=-g -O2 -Wall -Werror  $(INCLUDES) $(EXTRAINCLUDES) $(DEFS)
 CFLAGS=-g -O2 -Wall $(INCLUDES) $(EXTRAINCLUDES) $(DEFS)
@@ -13,11 +13,9 @@ NAME=norepeats
 OTHERLIBES=
 LIBES= -lstdc++ -lOpenString
 LFLAGS= -L../ -L/usr/lib -L../OpenStringLibrary
-INSTALLDIR=/usr/bin/
+INSTALLDIR=/usr/local/bin/
 TESTDIR=../TEST/$(NAME)
 COMPRESSED=/usr/src/redhat/SOURCES/$(NAME)-$(VER).tgz
-RL=/usr/local/bin/rstlink
-RLS=/usr/local/bin/rstlink -release
 PROGRAM=$(NAME)
 OBJS=$(NAME).o
 SRCS=$(NAME).cpp
@@ -41,15 +39,6 @@ install: all
 	#cp $(MAN) /usr/local/man/man5/
 $(OBJ):
 
-restore:
-	$(RL) $(SRCS)
-release:
-	$(RLS) $(SRCS)
-
-test: restore
-	mkdir -p $(TESTDIR)
-	cp $(SRCS) $(TESTDIR)
-	cp Makefile $(TESTDIR)
 	
 #$(MAN): $(PROGRAM)
 #	./$(PROGRAM) -man > $(MAN)

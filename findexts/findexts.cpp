@@ -26,7 +26,7 @@ void CreateFileList(cStringList &mylist) {
 }
 
 int main(int argc, char* argv[]) {
-	cerr<<"December 22nd, 2013"<<endl;
+	cerr<<"Sept 12th, 2020"<<endl;
 	
 	cArgs arguments(argc,argv,"-");
 	

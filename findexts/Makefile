@@ -1,23 +1,21 @@
 # 
 # Makefile for norepeats
 # written by Chris Delezenski
-# GPL'ed (c) 2000-2013 Chris Delezenski
+# GPL'ed (c) 2000-2020 Chris Delezenski
 
 #CFLAGS=-g -O2 -Wall -Werror  $(INCLUDES) $(EXTRAINCLUDES) $(DEFS)
 CFLAGS=-g -O2 -Wall $(INCLUDES) $(EXTRAINCLUDES) $(DEFS)
 CPPFLAGS=$(CFLAGS)
-INCLUDES=-I./ -I../ -I/usr/include
+INCLUDES=-I./ -I../ -I/usr/include -I../OpenStringLibrary
 CC=gcc
 VER=0.3
 NAME=findexts
 OTHERLIBES=
 LIBES= -lstdc++ -lOpenString
-LFLAGS= -L../ -L/usr/lib
-INSTALLDIR=/usr/bin/
+LFLAGS= -L../ -L/usr/lib -L../OpenStringLibrary
+INSTALLDIR=/usr/local/bin/
 TESTDIR=../TEST/$(NAME)
 COMPRESSED=/usr/src/redhat/SOURCES/$(NAME)-$(VER).tgz
-RL=/usr/local/bin/rstlink
-RLS=/usr/local/bin/rstlink -release
 PROGRAM=$(NAME)
 OBJS=$(NAME).o
 SRCS=$(NAME).cpp
@@ -41,15 +39,6 @@ install: all
 	#cp $(MAN) /usr/local/man/man5/
 $(OBJ):
 
-restore:
-	$(RL) $(SRCS)
-release:
-	$(RLS) $(SRCS)
-
-test: restore
-	mkdir -p $(TESTDIR)
-	cp $(SRCS) $(TESTDIR)
-	cp Makefile $(TESTDIR)
 	
 #$(MAN): $(PROGRAM)
 #	./$(PROGRAM) -man > $(MAN)

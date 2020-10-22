@@ -39,6 +39,70 @@ func FileContainsDate(f string) bool {
 	return false
 }
 
+//NormalizePermissions : filename needs to be chowned and chmod'ed
+func NormalizePermissions(filename string, force bool) {
+	s := ""
+	if force {
+		s = "sudo "
+	}
+	//if on mac and force
+	if runtime.GOOS == "darwin" && force {
+		fmt.Println("\t" + s + "xattr -c \"" + filename + "\"")
+		fmt.Println("\t" + s + "chmod -N \"" + filename + "\"")
+	}
+	//can happen on either linux or mac
+
+	if force && os.Getenv("USER") != "" {
+		g := ""
+		if os.Getenv("GROUP") != "" {
+			g = ":" + os.Getenv("GROUP")
+		}
+		fmt.Println("\t" + s + "chown " + os.Getenv("USER") + g + " \"" + filename + "\"")
+	}
+}
+
+//ShortMonthNametoDigits : change short month to padded number
+func ShortMonthNametoDigits(m string) string {
+	ret := ""
+	switch m {
+	case "Jan":
+		ret = "01"
+	case "Feb":
+		ret = "02"
+	case "Mar":
+		ret = "03"
+	case "Apr":
+		ret = "04"
+	case "May":
+		ret = "05"
+	case "Jun":
+		ret = "06"
+	case "Jul":
+		ret = "07"
+	case "Aug":
+		ret = "08"
+	case "Sep":
+		ret = "09"
+	case "Oct":
+		ret = "10"
+	case "Nov":
+		ret = "11"
+	case "Dec":
+		ret = "12"
+	default:
+		ret = "invalid"
+	}
+	return ret
+}
+
+//PadDay : add a zero to days 1 through 9
+func PadDay(d string) string {
+	if len(d) == 1 {
+		return "0" + d
+	}
+	return d
+}
+
 //Step 1: take an argument
 //step 2: stat a file, pulll date (first birth, then created, then last accessed)
 //step 3: get filename, just filename and extension
@@ -46,7 +110,7 @@ func FileContainsDate(f string) bool {
 //step 5: construct new path, print mv statement to screen
 
 func main() {
-	const VERSION = "Multi-renamer (c) C Delezenski <cmd184psu@gmail.com> - 27Sept2020"
+	const VERSION = "Multi-renamer (c) C Delezenski <cmd184psu@gmail.com> - 21Oct2020"
 
 	var filename string
 	flag.StringVar(&filename, "filename", "", "file path to parse")
@@ -66,15 +130,30 @@ func main() {
 
 	var removedate bool
 	flag.BoolVar(&removedate, "removedate", false, "remove date from filename")
+	flag.BoolVar(&removedate, "skipdate", false, "do not add date to filename")
 
 	var newpath string
 	flag.StringVar(&newpath, "newpath", "", "new file path to move into")
+
+	var modtime string
+	modtime = ""
+	flag.StringVar(&modtime, "redate", "", "override the last modified date, must be of the form DDMMMYYYY, e.g. 01Jan1980")
 
 	flag.Parse()
 	if ver {
 		fmt.Println(VERSION)
 		os.Exit(0)
 	}
+
+	var adddate bool
+	adddate = !removedate
+
+	var redate bool
+	redate = (modtime != "")
+	if redate {
+		removedate = true
+	}
+
 	if filename == "" {
 		fmt.Println("Missing parameter: filename")
 		os.Exit(1)
@@ -100,6 +179,9 @@ func main() {
 	if len(filename) > 7 && ext == ".gz" && filename[len(filename)-7:len(filename)] == ".tar.gz" {
 		ext = ".tar.gz"
 	}
+	if len(filename) > 8 && ext == ".bz2" && filename[len(filename)-8:len(filename)] == ".tar.bz2" {
+		ext = ".tar.bz2"
+	}
 
 	basefilename := filepath.Base(filename)[0 : len(filepath.Base(filename))-len(ext)]
 
@@ -108,8 +190,11 @@ func main() {
 	//fmt.Println("path=" + path)
 	// fmt.Println("partial filename: ", basefilename)
 	//2020-09-26 23:11:25.28049781 -0400 EDT
-	modtime := fileStat.ModTime().Format("02Jan2006")
-	newfilename := ""
+	if !redate {
+		modtime = fileStat.ModTime().Format("02Jan2006")
+	}
+
+	newfilename := filename
 
 	containsdate := FileContainsDate(basefilename)
 
@@ -119,7 +204,9 @@ func main() {
 		newfilename = basefilename + strings.ToLower(ext)
 	} else if containsdate {
 		newfilename = basefilename + strings.ToLower(ext)
-	} else {
+	}
+
+	if adddate {
 		if basefilename[len(basefilename)-1] != '-' {
 			basefilename = basefilename + "-"
 		}
@@ -145,22 +232,40 @@ func main() {
 	if force {
 		s = "sudo "
 	}
-	//if on mac and force
-	if runtime.GOOS == "darwin" && force {
-		fmt.Println("\t" + s + "xattr -c \"" + filename + "\"")
-		fmt.Println("\t" + s + "chmod -N \"" + filename + "\"")
-	}
-	//can happen on either linux or mac
-
-	if force && os.Getenv("USER") != "" {
-		g := ""
-		if os.Getenv("GROUP") != "" {
-			g = ":" + os.Getenv("GROUP")
+	//012345678
+	//01Jan1980
+	if redate {
+		touchtime, err := time.Parse("02Jan2006", modtime)
+		if err != nil {
+			panic(err)
 		}
-		fmt.Println("\t" + s + "chown " + os.Getenv("USER") + g + " \"" + filename + "\"")
+
+		applydate := strconv.Itoa(touchtime.Year()) +
+			ShortMonthNametoDigits(touchtime.Month().String()[:3]) +
+			PadDay(strconv.Itoa(touchtime.Day())) + "0000"
+
+		fmt.Println("\t" + s + "touch -mt " + applydate + " \"" + filename + "\"")
+		fmt.Println("\t" + s + "touch -t " + applydate + " \"" + filename + "\"")
 	}
+
+	//if on mac and force
+	// if runtime.GOOS == "darwin" && force {
+	// 	fmt.Println("\t" + s + "xattr -c \"" + filename + "\"")
+	// 	fmt.Println("\t" + s + "chmod -N \"" + filename + "\"")
+	// }
+	// //can happen on either linux or mac
+
+	// if force && os.Getenv("USER") != "" {
+	// 	g := ""
+	// 	if os.Getenv("GROUP") != "" {
+	// 		g = ":" + os.Getenv("GROUP")
+	// 	}
+	// 	fmt.Println("\t" + s + "chown " + os.Getenv("USER") + g + " \"" + filename + "\"")
+	// }
+	NormalizePermissions(filename, force)
+
 	//if source filename and tgt are the same (e.g. a file with a date and no spaces, but we plan on moving it)
-	if filename != path+"/"+newfilename {
+	if filename != path+"/"+newfilename && filename != newfilename {
 		fmt.Println("\t" + s + output)
 	}
 	if newpath != "" {
@@ -169,17 +274,17 @@ func main() {
 			newpath = newpath + "/"
 		}
 
-		fmt.Println("\t" + s + "mkdir -p " + newpath)
+		fmt.Println("\t" + s + "mkdir -p \"" + newpath + "\"")
 
-		if force && os.Getenv("USER") != "" {
-			g := ""
-			if os.Getenv("GROUP") != "" {
-				g = ":" + os.Getenv("GROUP")
-			}
-			fmt.Println("\t" + s + "chown " + os.Getenv("USER") + g + " \"" + newpath + "\"")
-		}
-
-		fmt.Println("\t" + s + "mv -i" + v + " \"" + path + "/" + newfilename + "\" \"" + newpath + "\"")
+		// if force && os.Getenv("USER") != "" {
+		// 	g := ""
+		// 	if os.Getenv("GROUP") != "" {
+		// 		g = ":" + os.Getenv("GROUP")
+		// 	}
+		// 	fmt.Println("\t" + s + "chown " + os.Getenv("USER") + g + " \"" + newpath + "\"")
+		// }
+		NormalizePermissions(newpath, force)
+		fmt.Println("\t" + s + "mv -i" + v + " \"" + path + "/" + filepath.Base(newfilename) + "\" \"" + newpath + "\"")
 	}
 
 	fmt.Println("fi")

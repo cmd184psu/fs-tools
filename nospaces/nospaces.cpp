@@ -47,7 +47,7 @@ cString CliFriendly(cString input) {
 	return output;
 }
 
-void generateProcessor(bool dir, bool rec) {
+void generateProcessor(bool dir, bool rec, bool force) {
 	cStringList thelist;
 	cString type="";
 	cString depth="";
@@ -63,6 +63,9 @@ void generateProcessor(bool dir, bool rec) {
 	for(int i=0; i<thelist.Length(); i++) {
 		if(thelist[i]=="") continue;
 		cout<<"# "<<thelist[i]<<endl;
+		cout<<"sudo xattr -c "<<BashFriendly(thelist[i])<<endl;
+		cout<<"sudo chmod -N "<<BashFriendly(thelist[i])<<endl;
+		if(force) cout<<"sudo ";
 		cout<<"mv -iv "<<BashFriendly(thelist[i])<<" "<<CliFriendly(thelist[i])<<endl; 		
 		cerr<<"\rProgress: "<<(i+1)<<" / "<<thelist.Length()<<endl;	
 	} //end of for i
@@ -70,7 +73,7 @@ void generateProcessor(bool dir, bool rec) {
 }
 
 int main(int argc, char* argv[]) {
-	cerr<<"Sept 4th, 2020"<<endl;
+	cerr<<"Sept 5th, 2020"<<endl;
 	cArgs arguments(argc,argv,"-");
 	if(arguments.IsSet("v")) return 0;
 	cout<<"#!/bin/sh"<<endl;
@@ -79,6 +82,8 @@ int main(int argc, char* argv[]) {
 	else cerr<<"directories: no"<<endl;
 	if(!arguments.IsSet("nr")) cerr<<"recursion: yes"<<endl;
 	else cerr<<"recursion: no"<<endl;
-	generateProcessor(arguments.IsSet("d"),!arguments.IsSet("nr"));
+
+	if(arguments.IsSet("u") generateProcessorUNDO();
+	else generateProcessor(arguments.IsSet("d"),!arguments.IsSet("nr"),arguments.IsSet("f"));
 	return 0;
 }

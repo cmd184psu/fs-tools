@@ -108,15 +108,32 @@ func PadDay(d string) string {
 //step 3: get filename, just filename and extension
 //step 4: detect if date was already added
 //step 5: construct new path, print mv statement to screen
+//step 6: move file processor to function
+func SingleFileProcessor(filename string) {
+
+}
+
+type fileRenameStruct struct {
+	force    bool
+	nospaces bool
+	ar       map[string]string
+}
+
+func parseArgs() *fileRenameStruct {
+	frs := new(fileRenameStruct)
+
+	flag.BoolVar(&frs.nospaces, "nospaces", false, "replace spaces with dashes")
+
+	flag.Parse()
+
+	return frs
+}
 
 func main() {
-	const VERSION = "Multi-renamer (c) C Delezenski <cmd184psu@gmail.com> - 21Oct2020"
+	const VERSION = "Multi-renamer (c) C Delezenski <cmd184psu@gmail.com> - 2Nov2020"
 
 	var filename string
 	flag.StringVar(&filename, "filename", "", "file path to parse")
-
-	var nospaces bool
-	flag.BoolVar(&nospaces, "nospaces", false, "replace spaces with dashes")
 
 	var force bool
 	flag.BoolVar(&force, "force", false, "use the force! (sudo)")
@@ -138,8 +155,7 @@ func main() {
 	var modtime string
 	modtime = ""
 	flag.StringVar(&modtime, "redate", "", "override the last modified date, must be of the form DDMMMYYYY, e.g. 01Jan1980")
-
-	flag.Parse()
+	frs := parseArgs()
 	if ver {
 		fmt.Println(VERSION)
 		os.Exit(0)
@@ -214,7 +230,7 @@ func main() {
 	}
 
 	//remove spaces in favor of dashes
-	if nospaces {
+	if frs.nospaces {
 		newfilename = strings.ReplaceAll(newfilename, " ", "-")
 	}
 	//fmt.Println("# OS detected: " + runtime.GOOS)

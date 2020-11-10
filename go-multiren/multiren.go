@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -120,10 +121,6 @@ func PadDay(d string) string {
 //step 5: construct new path, print mv statement to screen
 //step 6: move file processor to function
 
-func singleFileProcessor(filename string) {
-	debugPrint("now processing filename: " + filename)
-}
-
 type fileRenameStruct struct {
 	force           bool
 	nospaces        bool
@@ -135,6 +132,7 @@ type fileRenameStruct struct {
 	modtimeOverride string
 	adddate         bool
 	redate          bool
+	walk            bool
 }
 
 type filenameStruct struct {
@@ -194,6 +192,7 @@ func parseArgs() *fileRenameStruct {
 	filename = ""
 	flag.StringVar(&filename, "filename", "", "file path to parse")
 	flag.BoolVar(&frs.force, "force", false, "use the force! (sudo)")
+	flag.BoolVar(&frs.walk, "walk", false, "walk the directory tree (EXPERIMENTAL)")
 	flag.BoolVar(&frs.verbose, "verbose", false, "verbose move")
 	flag.BoolVar(&frs.ver, "ver", false, "show version")
 	flag.BoolVar(&frs.ver, "version", false, "show version")
@@ -214,54 +213,37 @@ func parseArgs() *fileRenameStruct {
 	return frs
 }
 
-func main() {
-	const VERSION = "Multi-renamer (c) C Delezenski <cmd184psu@gmail.com> - 2Nov2020"
+func singleFileProcessor(f string, frs *fileRenameStruct) error {
+	debugPrint("now processing filename: " + f)
 
-	frs := parseArgs()
-	if frs.ver {
-		fmt.Println(VERSION)
-		os.Exit(0)
-	}
-
-	if frs.filename.fullname == "" {
-		fmt.Println("# Err: Missing parameter: filename")
-		os.Exit(1)
-	}
-
-	fileStat, err := os.Stat(frs.filename.fullname)
-
-	if err != nil {
-		//log.Fatal(err)
-		fmt.Println("# Err: " + frs.filename.fullname + " not found")
-		os.Exit(1)
-	}
-
-	if fileStat.IsDir() {
-		fmt.Println("# Err: " + frs.filename.fullname + " is a directory")
-		os.Exit(1)
-	}
+	fns := parseFilename(f)
+	debugPrint("now processing filename: " + fns.fullname)
 	//2020-09-26 23:11:25.28049781 -0400 EDT
+
+	fileStat, err := os.Stat(fns.fullname)
+	if err != nil {
+		return err
+	}
 	if !frs.redate {
-		frs.filename.modtime = fileStat.ModTime().Format("02Jan2006")
-		debugPrint("modtime is " + frs.filename.modtime)
+		fns.modtime = fileStat.ModTime().Format("02Jan2006")
+		debugPrint("modtime is " + fns.modtime)
 	} else {
-		frs.filename.modtime = frs.modtimeOverride
+		fns.modtime = frs.modtimeOverride
+	}
+	newfilename := fns.fullname
+	newfileBase := fns.base
+	debugPrint("removedate: " + strconv.FormatBool(frs.removedate) + " filename has date: " + strconv.FormatBool(fns.hasDate))
+
+	if frs.removedate && fns.hasDate {
+		debugPrint("modtime: " + fns.modtime)
+		newfileBase = fns.base[0 : len(fns.base)-(len(fns.modtime)+1)]
+		newfilename = newfileBase + strings.ToLower(fns.ext)
+	} else if fns.hasDate {
+		newfilename = fns.base + strings.ToLower(fns.ext)
 	}
 
-	newfilename := frs.filename.fullname
-	newfileBase := frs.filename.base
-	debugPrint("removedate: " + strconv.FormatBool(frs.removedate) + " filename has date: " + strconv.FormatBool(frs.filename.hasDate))
-
-	if frs.removedate && frs.filename.hasDate {
-		debugPrint("modtime: " + frs.filename.modtime)
-		newfileBase = frs.filename.base[0 : len(frs.filename.base)-(len(frs.filename.modtime)+1)]
-		newfilename = newfileBase + strings.ToLower(frs.filename.ext)
-	} else if frs.filename.hasDate {
-		newfilename = frs.filename.base + strings.ToLower(frs.filename.ext)
-	}
-
-	debugPrint("old base: " + frs.filename.base)
-	debugPrint("old filename is " + frs.filename.fullname)
+	debugPrint("old base: " + fns.base)
+	debugPrint("old filename is " + fns.fullname)
 	debugPrint("new base: " + newfileBase)
 	debugPrint("new filename is " + newfilename)
 
@@ -269,7 +251,7 @@ func main() {
 		if newfileBase[len(newfileBase)-1] != '-' {
 			newfileBase = newfileBase + "-"
 		}
-		newfilename = newfileBase + frs.filename.modtime + strings.ToLower(frs.filename.ext)
+		newfilename = newfileBase + fns.modtime + strings.ToLower(fns.ext)
 	}
 
 	//remove spaces in favor of dashes
@@ -277,30 +259,27 @@ func main() {
 		newfilename = strings.ReplaceAll(newfilename, " ", "-")
 	}
 
-	output := "mv -i" + doVerboseMove(frs.verbose) + " \"" + frs.filename.fullname + "\" \"" + frs.filename.path + "/" + newfilename + "\""
-	fmt.Println("if [ -e \"" + frs.filename.fullname + "\" ]; then")
+	output := "mv -i" + doVerboseMove(frs.verbose) + " \"" + fns.fullname + "\" \"" + fns.path + "/" + newfilename + "\""
+	fmt.Println("if [ -e \"" + fns.fullname + "\" ]; then")
 	fmt.Println("\t# execute:")
-
 	//012345678
 	//01Jan1980
 	if frs.redate {
-		touchtime, err := time.Parse("02Jan2006", frs.filename.modtime)
+		touchtime, err := time.Parse("02Jan2006", fns.modtime)
 		if err != nil {
 			panic(err)
 		}
-
 		applydate := strconv.Itoa(touchtime.Year()) +
 			ShortMonthNametoDigits(touchtime.Month().String()[:3]) +
 			PadDay(strconv.Itoa(touchtime.Day())) + "0000"
-
-		fmt.Println("\t" + doForce(frs.force) + "touch -mt " + applydate + " \"" + frs.filename.fullname + "\"")
-		fmt.Println("\t" + doForce(frs.force) + "touch -t " + applydate + " \"" + frs.filename.fullname + "\"")
+		fmt.Println("\t" + doForce(frs.force) + "touch -mt " + applydate + " \"" + fns.fullname + "\"")
+		fmt.Println("\t" + doForce(frs.force) + "touch -t " + applydate + " \"" + fns.fullname + "\"")
 	}
 
-	NormalizePermissions(frs.filename.fullname, frs.force)
+	NormalizePermissions(fns.fullname, frs.force)
 
 	//if source filename and tgt are the same (e.g. a file with a date and no spaces, but we plan on moving it)
-	if frs.filename.fullname != frs.filename.path+"/"+newfilename && frs.filename.fullname != newfilename {
+	if fns.fullname != fns.path+"/"+newfilename && fns.fullname != newfilename {
 		fmt.Println("\t" + doForce(frs.force) + output)
 	}
 	if frs.newpath != "" {
@@ -309,7 +288,52 @@ func main() {
 		}
 		fmt.Println("\t" + doForce(frs.force) + "mkdir -p \"" + frs.newpath + "\"")
 		NormalizePermissions(frs.newpath, frs.force)
-		fmt.Println("\t" + doForce(frs.force) + "mv -i" + doVerboseMove(frs.verbose) + " \"" + frs.filename.path + "/" + filepath.Base(newfilename) + "\" \"" + frs.newpath + "\"")
+		fmt.Println("\t" + doForce(frs.force) + "mv -i" + doVerboseMove(frs.verbose) + " \"" + fns.path + "/" + filepath.Base(newfilename) + "\" \"" + frs.newpath + "\"")
 	}
 	fmt.Println("fi")
+	return nil
+}
+
+func main() {
+	const VERSION = "Multi-renamer (c) C Delezenski <cmd184psu@gmail.com> - 2Nov2020"
+	frs := parseArgs()
+	if frs.ver {
+		fmt.Println(VERSION)
+		os.Exit(0)
+	}
+
+	if frs.walk {
+		//walks the whole tree
+		err := filepath.Walk(".",
+			func(path string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+
+				//process or do not process (if file, if certain criteria are met)
+				fmt.Println(path)
+				return nil
+			})
+		if err != nil {
+			log.Println(err)
+		}
+		os.Exit(0)
+	}
+
+	if frs.filename.fullname == "" {
+		fmt.Println("# Err: Missing parameter: filename")
+		os.Exit(1)
+	}
+	fileStat, err := os.Stat(frs.filename.fullname)
+
+	if err != nil {
+		//log.Fatal(err)
+		fmt.Println("# Err: " + frs.filename.fullname + " not found")
+		os.Exit(1)
+	} else if fileStat.IsDir() {
+		fmt.Println("# Err: " + frs.filename.fullname + " is a directory")
+		os.Exit(1)
+	} else {
+		err = singleFileProcessor(frs.filename.fullname, frs)
+	}
 }

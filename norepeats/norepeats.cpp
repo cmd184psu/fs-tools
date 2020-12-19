@@ -23,11 +23,38 @@
 #include <stdlib.h>
 #include <OpenStringLib.h>
 
-#define VERSION "(Part of Dev Tools) Norepeats v0.99 - 9-12-20 - written by Chris Delezenski"
+#define VERSION "(Part of Dev Tools) Norepeats v1.0.1 - 15Nov20.1 - written by C Delezenski"
 
 
 void usage() {
 	cout<<"USAGE: norepeats -w [*.ext] generates a batch file to stdout, errors to stderr"<<endl;
+}
+
+long GetFileSize(cString filename)
+{
+    struct stat stat_buf;
+    int rc = stat(filename.c_str(), &stat_buf);
+    return rc == 0 ? stat_buf.st_size : -1;
+}
+
+cString ShowTime(time_t &t) {
+	struct tm* buf2=NULL;	
+	cString month,day,year;
+	buf2=localtime(&t);
+	if(buf2->tm_mon+1<10) month="0"+cString(buf2->tm_mon+1);
+	else month=cString(buf2->tm_mon+1);
+	if(buf2->tm_mday+1<10) day="0"+cString(buf2->tm_mday);
+	else day=cString(buf2->tm_mday);
+	if(buf2->tm_year-100<0) year=cString(buf2->tm_year);
+	else if(buf2->tm_year-100<10) year="0"+cString(buf2->tm_year-100);
+	else year=cString(buf2->tm_year-100);
+	return month+"-"+day+"-"+year;
+}
+
+cString GetFileDateStamp(cString filename) {
+	struct stat buf;
+	stat(filename,&buf);	
+	return ShowTime(buf.st_mtime);
 }
 
 cString BashFriendly(cString input) {
@@ -204,6 +231,11 @@ void lookfordups(cString wildcard, cString hint, bool force, bool everything) {
 	progressBeginning(progressFile);
 	for(int i=0; i<thelist.Length(); i++) {
 		if(thelist[i]!="") {
+				cerr<<endl<<"#\t filename: "<<BashFriendly(thelist.GetName(i))<<endl;
+				cerr<<"#\t size: "<<GetFileSize(thelist.GetName(i))<<endl;
+				cerr<<"#\t datestamp: "<<GetFileDateStamp(thelist.GetName(i))<<endl;
+				
+
 			for(int j=i+1; j<thelist.Length(); j++) {
 				if(thelist[j]==""){ 
 					donothing=3;
@@ -212,26 +244,33 @@ void lookfordups(cString wildcard, cString hint, bool force, bool everything) {
 					donothing=3;
 				} else {
 
-					if(i!=j && thelist.GetValFromIndex(i)[0]==thelist.GetValFromIndex(j)[0] && thelist.GetValFromIndex(i)[1]==thelist.GetValFromIndex(j)[1] ) {
+					if(i!=j && thelist.GetValFromIndex(i)[0]==thelist.GetValFromIndex(j)[0] && thelist.GetValFromIndex(i)[1]==thelist.GetValFromIndex(j)[1] && //) {
 
-					if(thelist.GetValFromIndex(i)==thelist.GetValFromIndex(j) && i!=j) {
-						cout<<endl<<"# "<<thelist.GetName(i)<<" and "<<thelist.GetName(j)<<" contain the same data"<<endl;
-						cout<<"# "<<thelist.GetValFromIndex(i)<<" == "<<thelist.GetValFromIndex(j)<<endl;
-						if(force) cout<<"sudo ";
-						if(APreferredKeepOverB(thelist.GetName(i),thelist.GetName(j),hint)) {
-							cout<<"rm -rvf "<<BashFriendly(thelist.GetName(j))<<endl; 		
-							thelist[j]="";
-						} else {
-							cout<<"rm -rvf "<<BashFriendly(thelist.GetName(i))<<endl;
-							thelist[i]="";
-						}
-						progressDuring(progressFile,i+1,thelist.Length());
-						hits++;
-					}
-					}
+						//if(
+							thelist.GetValFromIndex(i)==thelist.GetValFromIndex(j) && i!=j) {
+							cout<<endl<<"# "<<thelist.GetName(i)<<" and "<<thelist.GetName(j)<<" contain the same data"<<endl;
+							cout<<"# "<<thelist.GetValFromIndex(i)<<" == "<<thelist.GetValFromIndex(j)<<endl;
+							if(force) cout<<"sudo ";
+
+
+
+							if(APreferredKeepOverB(thelist.GetName(i),thelist.GetName(j),hint)) {
+								cout<<"rm -rvf "<<BashFriendly(thelist.GetName(j))<<endl; 		
+								thelist[j]="";
+							} else {
+								cout<<"rm -rvf "<<BashFriendly(thelist.GetName(i))<<endl;
+								thelist[i]="";
+							}
+							progressDuring(progressFile,i+1,thelist.Length());
+							hits++;
+						} 
+					//}
 	
 				} //end if	
-				cerr<<"\rProgress: "<<(i+1)<<" / "<<thelist.Length()<<" hits="<<hits<<"          " ;	
+			
+				
+
+				//cerr<<"\rProgress: "<<(i+1)<<" / "<<thelist.Length()<<" hits="<<hits<<"          " ;	
 			} //end of for j
 
 		}
@@ -245,7 +284,7 @@ void lookfordups(cString wildcard, cString hint, bool force, bool everything) {
 
 int main(int argc, char* argv[]) {
 
-	cerr<<"Sep 12th, 2020"<<endl;
+	cerr<<VERSION<<endl;
 	cArgs arguments(argc,argv,"-");
 	
 	

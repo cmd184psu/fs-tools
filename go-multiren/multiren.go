@@ -4,15 +4,19 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
 const debug = true
+
+var wg sync.WaitGroup
 
 func debugPrint(s string) {
 	if debug {
@@ -222,6 +226,8 @@ func singleFileProcessor(f string, frs *fileRenameStruct) error {
 
 	fileStat, err := os.Stat(fns.fullname)
 	if err != nil {
+		wg.Done()
+
 		return err
 	}
 	if !frs.redate {
@@ -291,11 +297,23 @@ func singleFileProcessor(f string, frs *fileRenameStruct) error {
 		fmt.Println("\t" + doForce(frs.force) + "mv -i" + doVerboseMove(frs.verbose) + " \"" + fns.path + "/" + filepath.Base(newfilename) + "\" \"" + frs.newpath + "\"")
 	}
 	fmt.Println("fi")
+
+	fmt.Printf("#Current Unix Time: %v\n", time.Now().Unix())
+	rand.Seed(time.Now().UnixNano())
+	n := rand.Intn(2) + 2 // n will be between 2 and 4
+
+	debugPrint("sleeping for a number of seconds...")
+
+	time.Sleep(time.Duration(n) * time.Second)
+
+	fmt.Printf("# --> Current Unix Time: %v\n", time.Now().Unix())
+	debugPrint("Work completed for file: " + f + "\n")
+	wg.Done()
 	return nil
 }
 
 func main() {
-	const VERSION = "Multi-renamer (c) C Delezenski <cmd184psu@gmail.com> - 2Nov2020"
+	const VERSION = "Multi-renamer (c) C Delezenski <cmd184psu@gmail.com> - 10Nov2020"
 	frs := parseArgs()
 	if frs.ver {
 		fmt.Println(VERSION)
@@ -311,29 +329,45 @@ func main() {
 				}
 
 				//process or do not process (if file, if certain criteria are met)
-				fmt.Println(path)
+
+				fileStat, err := os.Stat(path)
+				if err != nil {
+					return err
+				}
+
+				if fileStat.IsDir() {
+					fmt.Println("# Entering Directory: " + path)
+				} else {
+					fmt.Println("# is a file: " + path)
+					wg.Add(1)
+					go singleFileProcessor(path, frs)
+				}
 				return nil
 			})
 		if err != nil {
 			log.Println(err)
 		}
-		os.Exit(0)
-	}
 
-	if frs.filename.fullname == "" {
-		fmt.Println("# Err: Missing parameter: filename")
-		os.Exit(1)
-	}
-	fileStat, err := os.Stat(frs.filename.fullname)
-
-	if err != nil {
-		//log.Fatal(err)
-		fmt.Println("# Err: " + frs.filename.fullname + " not found")
-		os.Exit(1)
-	} else if fileStat.IsDir() {
-		fmt.Println("# Err: " + frs.filename.fullname + " is a directory")
-		os.Exit(1)
 	} else {
-		err = singleFileProcessor(frs.filename.fullname, frs)
+
+		if frs.filename.fullname == "" {
+			fmt.Println("# Err: Missing parameter: filename")
+			os.Exit(1)
+		}
+		fileStat, err := os.Stat(frs.filename.fullname)
+
+		if err != nil {
+			//log.Fatal(err)
+			fmt.Println("# Err: " + frs.filename.fullname + " not found")
+			os.Exit(1)
+		} else if fileStat.IsDir() {
+			fmt.Println("# Err: " + frs.filename.fullname + " is a directory")
+			os.Exit(1)
+		} else {
+			err = singleFileProcessor(frs.filename.fullname, frs)
+		}
 	}
+	wg.Wait()
+	debugPrint("=== end of walk===")
+
 }

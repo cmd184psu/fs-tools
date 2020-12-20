@@ -39,6 +39,7 @@ else
 		echo "   or"
 		echo " apt-get install openssl # ubuntu / raspian" >&2
 		exit 1
+	fi
 fi
 
 # encryption

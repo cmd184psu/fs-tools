@@ -38,6 +38,7 @@ else
 		echo "   or"
 		echo " apt-get install openssl # ubuntu / raspian" >&2
 		exit 1
+	fi
 fi
 #echo "openssl enc -aes256 -salt -k ${PASS} -in $FILENAME -out $FILENAME.enc "
 

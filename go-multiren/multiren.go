@@ -161,8 +161,9 @@ func parseFilename(f string) *filenameStruct {
 		fns.ext = ".tar.gz"
 	} else if l > 8 && fns.ext == ".bz2" && fns.fullname[l-8:l] == ".tar.bz2" {
 		fns.ext = ".tar.bz2"
+	} else if l > 8 && fns.ext == ".enc" && fns.fullname[l-8:l] == ".tgz.enc" {
+		fns.ext = ".tgz.enc"
 	}
-
 	fns.base = filepath.Base(fns.fullname)[0 : len(filepath.Base(fns.fullname))-len(fns.ext)]
 
 	fns.path = filepath.Dir(fns.fullname)
@@ -313,7 +314,7 @@ func singleFileProcessor(f string, frs *fileRenameStruct) error {
 }
 
 func main() {
-	const VERSION = "Multi-renamer (c) C Delezenski <cmd184psu@gmail.com> - 10Nov2020"
+	const VERSION = "Multi-renamer (c) C Delezenski <cmd184psu@gmail.com> - 19Dec2020"
 	frs := parseArgs()
 	if frs.ver {
 		fmt.Println(VERSION)

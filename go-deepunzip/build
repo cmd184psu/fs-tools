@@ -1,0 +1,193 @@
+#!/bin/sh
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+	INSTALLDIR=/usr/local/bin/
+else
+	INSTALLDIR=/usr/bin/
+fi
+
+EXE=deepunzip
+
+if ! go build src/*.go; then
+	echo "build failed"
+	exit 1
+fi
+
+
+if [ "$1" == "-install" ]; then
+	sudo install -v -m 755 $EXE $INSTALLDIR
+	which $EXE
+	$EXE -version
+	exit 0
+fi
+
+declare -a mnames
+mnames=(invalid Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec)
+TESTFILE="localtextfile.txt"
+
+
+
+if [ "$1" == "-test" ]; then
+
+  rm -rf testdir
+  ./build
+  mkdir -p testdir/subdir1
+  mkdir -p testdir/subdir2
+  mkdir -p testdir/subdir3
+  mkdir -p testdir/subdir4
+  
+  cp stuff.tgz testdir/subdir1/stuff1234.tgz
+  cp stuff.tgz testdir/subdir2/stuff2345.tar.gz
+  cp stuff.tgz testdir/subdir3/stuff3456.tgz
+  cp stuff.tgz testdir/subdir3/stuff4567.tgz
+  (cd testdir && ../deepunzip)
+fi
+
+
+
+
+
+if [ "$1" == "-oldtest" ]; then
+	YEAR=`date +%Y`
+	DAY=`date +%d`
+	MONTH=`date +%m`
+	if [ "${MONTH:0:1}" == "0" ]; then
+    	MONTH=${MONTH:1:1}
+	fi
+	MONTH=${mnames[${MONTH}]}
+
+#	TESTDATE=`date +%
+	touch "$TESTFILE"
+	TESTPATH="path/to/new/location"
+	MODDATE="-${DAY}${MONTH}${YEAR}"
+	TESTFILE_JUSTFILE=$(basename -- "$TESTFILE")
+
+	if [[ "$TESTFILE_JUSTFILE" == *".tar.gz" ]]; then
+		TESTFILE_EXT="tar.gz"
+		TESTFILE_JUSTFILE="${TESTFILE_JUSTFILE%.*}"
+	else
+		TESTFILE_EXT="${TESTFILE_JUSTFILE##*.}"
+	fi
+	TESTFILE_JUSTFILE="${TESTFILE_JUSTFILE%.*}"
+	TESTFILE_JUSTFILE_NOSPACES=`gecho "${TESTFILE_JUSTFILE}" | sed 's/ /-/g'`
+
+	gecho "====== TEST 1: move to new location ======"
+	gecho -e "./$EXE -filename \"${TESTFILE}\" -newpath $TESTPATH -verbose | sh"
+	./$EXE -filename "${TESTFILE}" -newpath $TESTPATH -verbose |sh
+	gecho -e "if [ -e \"$TESTPATH/${TESTFILE_JUSTFILE}${MODDATE}.${TESTFILE_EXT}\" ]; then (we good)"
+	if [ -e "$TESTPATH/${TESTFILE_JUSTFILE}${MODDATE}.${TESTFILE_EXT}" ]; then
+		echo "passing test 1"
+	else
+		echo "failed on test 1"
+		exit 1
+	fi
+
+	gecho "mv -v \"${TESTPATH}/${TESTFILE_JUSTFILE}${MODDATE}.${TESTFILE_EXT}\" ."
+	mv -v "${TESTPATH}/${TESTFILE_JUSTFILE}${MODDATE}.${TESTFILE_EXT}" .
+	gecho
+	gecho "====== TEST 2: remove date stamp ======"
+
+	gecho -e "./$EXE -filename \"${TESTFILE_JUSTFILE}${MODDATE}.${TESTFILE_EXT}\" -removedate -verbose | sh"
+	./$EXE -filename "${TESTFILE_JUSTFILE}${MODDATE}.${TESTFILE_EXT}" -removedate -verbose | sh
+
+	gecho -e "if [ -e \"./${TESTFILE_JUSTFILE}.${TESTFILE_EXT}\" ]; then (we good)"
+	if [ -e "./${TESTFILE_JUSTFILE}.${TESTFILE_EXT}" ]; then
+	 	echo "passing test 2"
+	else
+	 	echo "failed on test 2"
+	 	exit 1
+	fi
+
+	gecho
+	gecho "====== TEST 3: remove spaces stamp ======"
+
+	gecho "./$EXE -filename \"${TESTFILE_JUSTFILE}.${TESTFILE_EXT}\" -nospaces -verbose | sh"
+	./$EXE -filename "${TESTFILE_JUSTFILE}.${TESTFILE_EXT}" -nospaces -verbose | sh
+
+	gecho -e "if [ -e \"./${TESTFILE_JUSTFILE_NOSPACES}${MODDATE}.${TESTFILE_EXT}\" ]; then (we good)"
+	if [ -e "./${TESTFILE_JUSTFILE_NOSPACES}${MODDATE}.${TESTFILE_EXT}" ]; then
+	 	echo "passing test 3"
+	else
+	 	echo "failed on test 3"
+	 	exit 1
+	fi
+	gecho 
+	gecho "====== clean up ======"
+	sudo rm -vf ${TESTFILE_JUSTFILE_NOSPACES}${MODDATE}.${TESTFILE_EXT}
+	sudo rmdir -p ${TESTPATH}
+	 #./multiren -filename "localtextfile.txt" -newpath path/to/new/location -verbose -force -redate 01Jan1980
+	gecho "====== TEST 4: force an alternate date ======"
+
+	MODDATE="01Jan1980"
+	gecho "./$EXE -filename \"${TESTFILE_JUSTFILE}.${TESTFILE_EXT}\"  -verbose -force -redate ${MODDATE} | sh"
+	
+	touch "${TESTFILE_JUSTFILE}.${TESTFILE_EXT}"
+	./$EXE -filename "${TESTFILE_JUSTFILE}.${TESTFILE_EXT}" -verbose -force -redate ${MODDATE} | sh
+
+	gecho -e "if [ -e \"./${TESTFILE_JUSTFILE}-${MODDATE}.${TESTFILE_EXT}\" ]; then (we good)"
+	if [ -e "./${TESTFILE_JUSTFILE}-${MODDATE}.${TESTFILE_EXT}" ]; then
+			echo "passing test 4"
+	else
+			echo "failed on test 4"
+			exit 1
+	fi
+	gecho
+
+	gecho "====== clean up ======"
+	rm -vf ${TESTFILE_JUSTFILE}-${MODDATE}.${TESTFILE_EXT}
+
+
+	gecho "====== TEST 5: source file in relative subdirectory ======"
+
+	mkdir -p subdir1/subdir2/subdir3
+	mkdir -p tgtdir1/tgtdir2/tgtdir3
+	touch "subdir1/subdir2/subdir3/${TESTFILE_JUSTFILE}.${TESTFILE_EXT}"
+
+	gecho "./$EXE -filename \"subdir1/subdir2/subdir3/${TESTFILE_JUSTFILE}.${TESTFILE_EXT}\"  -newpath \"tgtdir1/tgtdir2/tgtdir3/\" -verbose -skipdate | sh"
+	./$EXE -filename "subdir1/subdir2/subdir3/localtextfile.txt"  -newpath "tgtdir1/tgtdir2/tgtdir3/" -verbose -skipdate | sh
+
+	gecho -e "if [ -e \"tgtdir1/tgtdir2/tgtdir3/${TESTFILE_JUSTFILE}.${TESTFILE_EXT}\" ]; then (we good)"
+	
+	if [ -e "tgtdir1/tgtdir2/tgtdir3/${TESTFILE_JUSTFILE}.${TESTFILE_EXT}" ]; then
+			echo "passing test 5"
+	else
+			echo "failed on test 5"
+			exit 1
+	fi
+	gecho
+
+	gecho "====== clean up ======"
+	rm -vf tgtdir1/tgtdir2/tgtdir3/${TESTFILE_JUSTFILE}.${TESTFILE_EXT}
+	rmdir -p tgtdir1/tgtdir2/tgtdir3
+	rmdir -p subdir1/subdir2/subdir3
+
+	gecho "====== TEST 6: source file in relative subdirectory + redate ======"
+
+	mkdir -p subdir1/subdir2/subdir3
+	mkdir -p tgtdir1/tgtdir2/tgtdir3
+	touch "subdir1/subdir2/subdir3/${TESTFILE_JUSTFILE}.${TESTFILE_EXT}"
+
+	gecho "./$EXE -filename \"subdir1/subdir2/subdir3/${TESTFILE_JUSTFILE}.${TESTFILE_EXT}\"  -newpath \"tgtdir1/tgtdir2/tgtdir3/\" -verbose -redate ${MODDATE} | sh"
+	./$EXE -filename "subdir1/subdir2/subdir3/localtextfile.txt"  -newpath "tgtdir1/tgtdir2/tgtdir3/" -verbose -redate ${MODDATE} | sh
+
+	gecho -e "if [ -e \"tgtdir1/tgtdir2/tgtdir3/${TESTFILE_JUSTFILE}-${MODDATE}.${TESTFILE_EXT}\" ]; then (we good)"
+	
+	if [ -e "tgtdir1/tgtdir2/tgtdir3/${TESTFILE_JUSTFILE}-${MODDATE}.${TESTFILE_EXT}" ]; then
+			echo "passing test 6"
+	else
+			echo "failed on test 6"
+			exit 1
+	fi
+	gecho
+
+	gecho "====== clean up ======"
+	rm -vf tgtdir1/tgtdir2/tgtdir3/${TESTFILE_JUSTFILE}-${MODDATE}.${TESTFILE_EXT}
+	rmdir -p tgtdir1/tgtdir2/tgtdir3
+	rmdir -p subdir1/subdir2/subdir3
+
+
+
+	
+
+	gecho "====== All tests passing ======"
+fi

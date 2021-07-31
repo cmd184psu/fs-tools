@@ -1,11 +1,11 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
 	INSTALLDIR=/usr/local/bin/
 else
 	INSTALLDIR=/usr/bin/
 fi
-
+export GOPATH=`pwd`
 EXE=deepunzip
 
 if ! go build src/*.go; then

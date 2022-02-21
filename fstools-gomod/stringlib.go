@@ -1,4 +1,4 @@
-package stringlib
+package fstools-gomod
 
 import (
 	"strings"

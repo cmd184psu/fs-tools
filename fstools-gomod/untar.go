@@ -1,4 +1,4 @@
-package archive
+package fstools-gomod
 
 import (
 	"archive/tar"

@@ -1,4 +1,4 @@
-package fileutils
+package fstools-gomod
 
 import (
 	"io/fs"

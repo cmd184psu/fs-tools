@@ -1,3 +1,3 @@
-module github.com/cmd184psu/fstools-gomod
+module cmd184psu/fstools/fstools-gomod
 
 go 1.15

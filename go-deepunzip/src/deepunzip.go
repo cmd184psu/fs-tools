@@ -21,8 +21,7 @@ import (
 
 	"archive/zip"
 
-	fileutils "github.com/cmd184psu/fs-tools/fstools-gomod/archive"
-	stringlib "github.com/cmd184psu/fs-tools/fstools-gomod/stringlib"
+	"github.com/cmd184psu/fs-tools/fstools-gomod"
 )
 
 const debug = true
@@ -416,7 +415,7 @@ func untarInnerLoop(p *filenameStruct) {
 		os.Exit(1)
 	}
 	defer f.Close()
-	fileutils.Untar(stringlib.TrimSuffix(p.fullname, p.ext), f)
+	fstools.Untar(fstools.TrimSuffix(p.fullname, p.ext), f)
 }
 
 func gunzipInnerLoop(p *filenameStruct) {
@@ -426,7 +425,7 @@ func gunzipInnerLoop(p *filenameStruct) {
 		os.Exit(1)
 	}
 	defer f.Close()
-	fileutils.Gunzip(stringlib.TrimSuffix(p.fullname, p.ext), f)
+	fstools.Gunzip(fstools.TrimSuffix(p.fullname, p.ext), f)
 }
 
 func unzipInnerLoop(p *filenameStruct) {
@@ -439,7 +438,7 @@ func unzipInnerLoop(p *filenameStruct) {
 		os.Exit(1)
 	}
 	defer f.Close()
-	fileutils.Unzip(stringlib.TrimSuffix(p.fullname, p.ext), f)
+	fstools.Unzip(fstools.TrimSuffix(p.fullname, p.ext), f)
 }
 
 func main() {

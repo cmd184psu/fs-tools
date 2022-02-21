@@ -5,7 +5,7 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
 else
 	INSTALLDIR=/usr/bin/
 fi
-export GOPATH=`pwd`
+#export GOPATH=`pwd`
 EXE=deepunzip
 
 if ! go build src/*.go; then

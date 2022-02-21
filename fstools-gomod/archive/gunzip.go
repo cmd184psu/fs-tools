@@ -1,10 +1,10 @@
-package fileutils
+package archive
 
 import (
+	"compress/gzip"
+	"fmt"
+	"io"
 	"os"
-    "compress/gzip"
-    "io"
-    "fmt"
 )
 
 // Untar takes a destination path and a reader; a tar reader loops over the tarfile
@@ -16,20 +16,19 @@ func Gunzip(dst string, r io.Reader) error {
 	}
 	defer gzr.Close()
 
-  
-  fmt.Println("want to create file: "+dst)
-    f, err := os.OpenFile(dst, os.O_CREATE|os.O_RDWR, os.FileMode(int(0644)))
-    if err != nil {
-        return err
-    }
+	fmt.Println("want to create file: " + dst)
+	f, err := os.OpenFile(dst, os.O_CREATE|os.O_RDWR, os.FileMode(int(0644)))
+	if err != nil {
+		return err
+	}
 
-    // copy over contents
-    if _, err := io.Copy(f, gzr); err != nil {
-        return err
-    }
+	// copy over contents
+	if _, err := io.Copy(f, gzr); err != nil {
+		return err
+	}
 
-    // manually close here after each file operation; defering would cause each file close
-    // to wait until all operations have completed.
-    defer f.Close()
-    return nil
+	// manually close here after each file operation; defering would cause each file close
+	// to wait until all operations have completed.
+	defer f.Close()
+	return nil
 }

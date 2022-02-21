@@ -1,11 +1,11 @@
-package fileutils
+package archive
 
 import (
+	"archive/tar"
+	"compress/gzip"
+	"io"
 	"os"
-    "archive/tar"
-    "compress/gzip"
-    "path/filepath"  
-    "io"
+	"path/filepath"
 )
 
 // Untar takes a destination path and a reader; a tar reader loops over the tarfile
@@ -67,7 +67,7 @@ func Untar(dst string, r io.Reader) error {
 			if _, err := io.Copy(f, tr); err != nil {
 				return err
 			}
-			
+
 			// manually close here after each file operation; defering would cause each file close
 			// to wait until all operations have completed.
 			f.Close()

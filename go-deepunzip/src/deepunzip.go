@@ -3,23 +3,28 @@ package main
 import (
 	"flag"
 	"fmt"
+
 	//"log"
 	"math/rand"
 	"os"
+
 	//"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
+
 	//"sync"
 	"time"
 
-    "path"
+	"path"
 	"path/filepath"
 
-    "archive/zip"
-    "fileutils"
-    "stringlib"
+	"archive/zip"
+
+	fileutils "github.com/cmd184psu/fs-tools/fstools-gomod/archive"
+	stringlib "github.com/cmd184psu/fs-tools/fstools-gomod/stringlib"
 )
+
 const debug = true
 
 //var wg sync.WaitGroup
@@ -153,8 +158,6 @@ type filenameStruct struct {
 	hasDate  bool
 	modtime  string
 }
-
-
 
 func parseFilename(f string) *filenameStruct {
 	fns := new(filenameStruct)
@@ -321,7 +324,6 @@ func singleFileProcessor(f string, frs *fileRenameStruct) error {
 	return nil
 }
 
-
 func getArchiveList(rootpath string) []*filenameStruct {
 
 	list := make([]*filenameStruct, 0, 10)
@@ -330,23 +332,22 @@ func getArchiveList(rootpath string) []*filenameStruct {
 		if info.IsDir() {
 			return nil
 		}
-        debugPrint("found: " + path)
-        
-        fns := parseFilename(path)
-      
-        debugPrint("\tfile extension: " + fns.ext)
-      
-        //if filepath.Ext(path) == ".gz" || filepath.Ext(path) == ".tar.gz" || filepath.Ext(path) == ".tgz" {
-      if ( fns.ext == ".tgz" || fns.ext == ".tar.gz" || fns.ext==".gz" || fns.ext==".zip")  {
-           debugPrint("\t appending---->" + fns.fullname)
-          
+		debugPrint("found: " + path)
+
+		fns := parseFilename(path)
+
+		debugPrint("\tfile extension: " + fns.ext)
+
+		//if filepath.Ext(path) == ".gz" || filepath.Ext(path) == ".tar.gz" || filepath.Ext(path) == ".tgz" {
+		if fns.ext == ".tgz" || fns.ext == ".tar.gz" || fns.ext == ".gz" || fns.ext == ".zip" {
+			debugPrint("\t appending---->" + fns.fullname)
+
 			list = append(list, fns)
-      } 
-      
-      
-      return nil
+		}
+
+		return nil
 	})
-  
+
 	if err != nil {
 		fmt.Printf("walk error [%v]\n", err)
 	}
@@ -364,12 +365,12 @@ func getArchiveList(rootpath string) []*filenameStruct {
 //    for true {
 //        header, err := tarReader.Next()
 //
-//      
+//
 //      fmt.Println("\tworking on ===> ",header.Name)
 ////        if(header.Name=="./") {
 ////          continue
 ////        }
-////        
+////
 //        if err == io.EOF {
 //            break
 //        }
@@ -380,10 +381,10 @@ func getArchiveList(rootpath string) []*filenameStruct {
 //
 //        switch header.Typeflag {
 //        case tar.TypeDir:
-//          
+//
 //          //fmt.Println("directory, do nothing")
 //          if header.Name!="./" {
-//            
+//
 //            if err := os.Mkdir(header.Name, 0755); err != nil {
 //                log.Fatalf("ExtractTarGz: Mkdir() failed: %s", err.Error())
 //            }
@@ -409,91 +410,91 @@ func getArchiveList(rootpath string) []*filenameStruct {
 //}
 
 func untarInnerLoop(p *filenameStruct) {
-  f, err := os.Open(p.fullname)
-  if err != nil {
-    fmt.Println(err)
-    os.Exit(1)
-  }
-  defer f.Close()
-  fileutils.Untar(stringlib.TrimSuffix(p.fullname,p.ext),f)
+	f, err := os.Open(p.fullname)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer f.Close()
+	fileutils.Untar(stringlib.TrimSuffix(p.fullname, p.ext), f)
 }
 
 func gunzipInnerLoop(p *filenameStruct) {
-  f, err := os.Open(p.fullname)
-  if err != nil {
-    fmt.Println(err)
-    os.Exit(1)
-  }
-  defer f.Close()
-  fileutils.Gunzip(stringlib.TrimSuffix(p.fullname,p.ext),f)
+	f, err := os.Open(p.fullname)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer f.Close()
+	fileutils.Gunzip(stringlib.TrimSuffix(p.fullname, p.ext), f)
 }
 
 func unzipInnerLoop(p *filenameStruct) {
-  
-  f, err := zip.OpenReader(p.fullname)
-  
-  //f, err := os.Open(p.fullname)
-  if err != nil {
-    fmt.Println(err)
-    os.Exit(1)
-  }
-  defer f.Close()
-  fileutils.Unzip(stringlib.TrimSuffix(p.fullname,p.ext),f)
+
+	f, err := zip.OpenReader(p.fullname)
+
+	//f, err := os.Open(p.fullname)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	defer f.Close()
+	fileutils.Unzip(stringlib.TrimSuffix(p.fullname, p.ext), f)
 }
 
 func main() {
-  excess := 20  
-  l := 1
-  
-  for l > 0 {
-    excess--
-	list := getArchiveList(".")
-    l = len(list)
-      
-	for i, p := range list {
-      fmt.Println("#[%d:%s,%s===%s]\n", i, p.fullname, path.Dir(p.fullname), path.Base(p.fullname))
-      fmt.Println("mkdir -p "+p.base)
+	excess := 20
+	l := 1
 
-      if(p.ext==".tgz" || p.ext==".tar.gz") {
-        fmt.Println("tar -xvpf "+p.fullname+" -C "+p.base)
-        untarInnerLoop(p)
+	for l > 0 {
+		excess--
+		list := getArchiveList(".")
+		l = len(list)
 
-        fmt.Println("rm -rf "+p.fullname)
-        
-        err := os.Remove(p.fullname)
-        if err != nil {
-          fmt.Println(err)
-          return
-        }
-        fmt.Println("File "+p.fullname+" successfully deleted")
-      } else if (p.ext==".gz") {
-        
-        //fmt.Println("gunzip "+p.fullname)
-        gunzipInnerLoop(p)
-        err := os.Remove(p.fullname)
-        if err != nil {
-          fmt.Println(err)
-          return
-        }
-      } else if (p.ext==".zip") {
-        
-        fmt.Println("****unzip "+p.fullname)
-        unzipInnerLoop(p)
-        err := os.Remove(p.fullname)
-        if err != nil {
-          fmt.Println(err)
-          return
-        }
-      }
+		for i, p := range list {
+			fmt.Println("#[%d:%s,%s===%s]\n", i, p.fullname, path.Dir(p.fullname), path.Base(p.fullname))
+			fmt.Println("mkdir -p " + p.base)
+
+			if p.ext == ".tgz" || p.ext == ".tar.gz" {
+				fmt.Println("tar -xvpf " + p.fullname + " -C " + p.base)
+				untarInnerLoop(p)
+
+				fmt.Println("rm -rf " + p.fullname)
+
+				err := os.Remove(p.fullname)
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+				fmt.Println("File " + p.fullname + " successfully deleted")
+			} else if p.ext == ".gz" {
+
+				//fmt.Println("gunzip "+p.fullname)
+				gunzipInnerLoop(p)
+				err := os.Remove(p.fullname)
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+			} else if p.ext == ".zip" {
+
+				fmt.Println("****unzip " + p.fullname)
+				unzipInnerLoop(p)
+				err := os.Remove(p.fullname)
+				if err != nil {
+					fmt.Println(err)
+					return
+				}
+			}
+
+		}
+
+		if excess < 0 {
+			fmt.Println("bail early!!!!")
+			os.Exit(1)
+		}
 
 	}
-    
-    if excess < 0 {
-      fmt.Println("bail early!!!!")
-      os.Exit(1)
-    }
-      
-  }
 }
 
 //func main() {
@@ -507,8 +508,8 @@ func main() {
 //	//if frs.walk {
 //    log.Println("begin walk...")
 //	//walks the whole tree
-//	
-//     
+//
+//
 //     err := filepath.Walk(".",
 //			func(path string, info os.FileInfo, err error) error {
 //				if err != nil {

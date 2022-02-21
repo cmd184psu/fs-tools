@@ -34,7 +34,7 @@ func System3(cmd string) {
 	//app:=arglist[0]
 
 	var b bytes.Buffer
-	if err := Execute(&b,
+	if err := Popen3(&b,
 		exec.Command(arglist[0], arglist[1:]...),
 	); err != nil {
 		log.Fatalln(err)

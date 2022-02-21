@@ -8,6 +8,10 @@ fi
 #export GOPATH=`pwd`
 EXE=deepunzip
 
+if [ "$1" == "arch" ]; then
+       _A="GOARCH=$2"
+fi
+
 if ! go build src/*.go; then
 	echo "build failed"
 	exit 1

@@ -1,4 +1,4 @@
-package fstools-gomod
+package fstools
 
 import (
 	"archive/zip"

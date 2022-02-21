@@ -1,11 +1,12 @@
-package fstools-gomod
+package fstools
 
 import (
 	"crypto/md5"
 	"encoding/hex"
 	"io"
 	"os"
-//	"flag"
+
+	//	"flag"
 	"fmt"
 )
 
@@ -40,11 +41,9 @@ func MD5sumFile(filePath string) (string, error) {
 
 }
 
-
 const (
 	bufferSize = int64(8 * 1024 * 1024)
 )
-
 
 //work in progress; want to return string of hash for a partial file
 func MD5sumChunk(filePath string, chunkSize int64) {

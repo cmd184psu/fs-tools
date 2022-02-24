@@ -3,6 +3,7 @@ package fstools
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -100,4 +101,45 @@ func call(stack []*exec.Cmd, pipes []*io.PipeWriter) (err error) {
 		}()
 	}
 	return stack[0].Wait()
+}
+
+func FileExists(filename string) (bool, error) {
+	_, err := os.Stat(filename)
+	if err == nil {
+		return true, nil
+	}
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+	return false, err
+}
+
+func PopentoString(cmd string) (string, error) {
+	arglist := strings.Split(cmd, " ")
+	//app:=arglist[0]
+
+	var b bytes.Buffer
+	if err := Popen3(&b,
+		exec.Command(arglist[0], arglist[1:]...),
+		exec.Command("head", "-1"),
+	); err != nil {
+		log.Fatalln(err)
+	}
+	return b.String(), nil
+}
+
+func PopentoStringAwk(cmd string, awk int) (string, error) {
+	arglist := strings.Split(cmd, " ")
+	//app:=arglist[0]
+
+	awkstatement := fmt.Sprintf("{print $%d}'", awk)
+	var b bytes.Buffer
+	if err := Popen3(&b,
+		exec.Command(arglist[0], arglist[1:]...),
+		exec.Command("head", "-1"),
+		exec.Command("awk", awkstatement),
+	); err != nil {
+		log.Fatalln(err)
+	}
+	return b.String(), nil
 }

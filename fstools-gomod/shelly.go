@@ -143,3 +143,18 @@ func PopentoStringAwk(cmd string, awk int) (string, error) {
 	}
 	return b.String(), nil
 }
+
+func DmidecodeProduct() (string, error) {
+	var b bytes.Buffer
+	if err := Popen3(&b,
+		exec.Command("dmidecode"),
+		exec.Command("grep", "-i", "product"),
+		exec.Command("head", "-1"),
+		exec.Command("awk", "{print $3}"),
+	); err != nil {
+		log.Fatalln(err)
+	}
+	//io.Copy(os.Stdout, &b)
+
+	return b.String(), nil
+}

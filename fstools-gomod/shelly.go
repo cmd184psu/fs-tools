@@ -154,7 +154,5 @@ func DmidecodeProduct() (string, error) {
 	); err != nil {
 		log.Fatalln(err)
 	}
-	//io.Copy(os.Stdout, &b)
-
 	return b.String(), nil
 }

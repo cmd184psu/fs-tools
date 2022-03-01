@@ -31,7 +31,7 @@ func Touch(fileName string) {
 	}
 }
 
-func System3(cmd string) {
+func System3(cmd string) error {
 	arglist := strings.Split(cmd, " ")
 	//app:=arglist[0]
 
@@ -40,8 +40,10 @@ func System3(cmd string) {
 		exec.Command(arglist[0], arglist[1:]...),
 	); err != nil {
 		log.Fatalln(err)
+		return err
 	}
 	io.Copy(os.Stdout, &b)
+	return nil
 }
 
 //was "readlines"

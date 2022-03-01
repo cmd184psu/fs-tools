@@ -187,7 +187,7 @@ func Move(src, dst string) error {
 	return os.Rename(src, dst)
 }
 
-func getFirstFile(rootpath string, hint string) string {
+func GetFirstFile(rootpath string, hint string) string {
 
 	var result string
 

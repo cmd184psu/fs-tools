@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -155,4 +156,76 @@ func DmidecodeProduct() (string, error) {
 		log.Fatalln(err)
 	}
 	return b.String(), nil
+}
+
+func Copy(src, dst string) (int64, error) {
+	sourceFileStat, err := os.Stat(src)
+	if err != nil {
+		return 0, err
+	}
+
+	if !sourceFileStat.Mode().IsRegular() {
+		return 0, fmt.Errorf("%s is not a regular file", src)
+	}
+
+	source, err := os.Open(src)
+	if err != nil {
+		return 0, err
+	}
+	defer source.Close()
+
+	destination, err := os.Create(dst)
+	if err != nil {
+		return 0, err
+	}
+	defer destination.Close()
+	nBytes, err := io.Copy(destination, source)
+	return nBytes, err
+}
+
+func Move(src, dst string) error {
+	return os.Rename(src, dst)
+}
+
+func getFirstFile(rootpath string, hint string) string {
+
+	var result string
+
+	err := filepath.Walk(rootpath, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+
+		if strings.HasSuffix(path, hint) {
+			//VerbosePrintln("found: " + path)
+			result = path
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		fmt.Printf("walk error [%v]\n", err)
+	}
+	return result
+}
+
+func ExecToFile(cli string, ofile string) error {
+	arglist := strings.Split(cli, " ")
+	cmd := exec.Command(arglist[0], arglist[1:]...)
+
+	// open the out file for writing
+	outfile, err := os.Create(ofile)
+	if err != nil {
+		panic(err)
+	}
+	defer outfile.Close()
+	cmd.Stdout = outfile
+
+	err = cmd.Start()
+	if err != nil {
+		return err
+	}
+	cmd.Wait()
+	return nil
 }

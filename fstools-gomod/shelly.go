@@ -155,11 +155,11 @@ func Popen3Grep(cmd string, musthave string, mustnothave string) ([]string, erro
 
 	var greplist []string
 	if len(musthave) != 0 {
-		greplist = strings.Split(musthave, " ")
+		greplist = strings.Split(musthave, "&")
 	}
 	var antigreplist []string
 	if len(mustnothave) != 0 {
-		antigreplist = strings.Split("-v "+mustnothave, " ")
+		antigreplist = strings.Split("-v "+mustnothave, "&")
 	}
 	//app:=arglist[0]
 	var err error
@@ -204,7 +204,7 @@ func Popen3DoubleGrep(cmd string, musthave string) ([]string, error) {
 
 	var greplist []string
 	if len(musthave) != 0 {
-		greplist = strings.Split(musthave, " ")
+		greplist = strings.Split(musthave, "&")
 	}
 
 	//app:=arglist[0]

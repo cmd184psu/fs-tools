@@ -147,6 +147,85 @@ func PopentoStringAwk(cmd string, awk int) (string, error) {
 	return b.String(), nil
 }
 
+func Popen3Grep(cmd string, musthave string, mustnothave string) ([]string, error) {
+	var b bytes.Buffer
+	arglist := strings.Split(cmd, " ")
+
+	//check for len<2 and return null array
+
+	var greplist []string
+	if len(musthave) != 0 {
+		greplist = strings.Split(musthave, " ")
+	}
+	var antigreplist []string
+	if len(mustnothave) != 0 {
+		antigreplist = strings.Split("-v "+mustnothave, " ")
+	}
+	//app:=arglist[0]
+	var err error
+
+	//case 1: popen and grep
+	if len(greplist) > 0 && len(antigreplist) == 0 {
+		if err = Popen3(&b,
+			exec.Command(arglist[0], arglist[1:]...),
+			exec.Command("grep", greplist[0:]...),
+		); err != nil {
+			log.Fatalln(err)
+		}
+	} else if len(greplist) == 0 && len(antigreplist) > 0 {
+
+		//case 2: popen and antigrep
+		if err = Popen3(&b,
+			exec.Command(arglist[0], arglist[1:]...),
+			exec.Command("grep", antigreplist[0:]...),
+		); err != nil {
+			log.Fatalln(err)
+		}
+	} else if len(greplist) > 0 && len(antigreplist) > 0 {
+		//case 3: popen, grep and antigrep
+
+		if err = Popen3(&b,
+			exec.Command(arglist[0], arglist[1:]...),
+			exec.Command("grep", greplist[0:]...),
+			exec.Command("grep", antigreplist[0:]...),
+		); err != nil {
+			log.Fatalln(err)
+		}
+	}
+	slice := strings.Split(b.String(), "\n")
+	return slice[:len(slice)-1], nil
+}
+
+func Popen3DoubleGrep(cmd string, musthave string) ([]string, error) {
+	var b bytes.Buffer
+	arglist := strings.Split(cmd, " ")
+
+	//check for len<2 and return null array
+
+	var greplist []string
+	if len(musthave) != 0 {
+		greplist = strings.Split(musthave, " ")
+	}
+
+	//app:=arglist[0]
+	var err error
+
+	//case 1: popen and grep
+	if len(greplist) == 2 {
+		if err = Popen3(&b,
+			exec.Command(arglist[0], arglist[1:]...),
+			exec.Command("grep", greplist[0]),
+			exec.Command("grep", greplist[1]),
+		); err != nil {
+			log.Fatalln(err)
+		}
+	} else {
+		return make([]string, 0), &os.SyscallError{}
+	}
+	slice := strings.Split(b.String(), "\n")
+	return slice[:len(slice)-1], nil
+}
+
 func DmidecodeProduct() (string, error) {
 	var b bytes.Buffer
 	if err := Popen3(&b,

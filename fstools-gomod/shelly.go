@@ -80,10 +80,11 @@ func Popen3(output_buffer *bytes.Buffer, stack ...*exec.Cmd) (err error) {
 	stack[i].Stdout = output_buffer
 	stack[i].Stderr = &error_buffer
 
-	if err := call(stack, pipe_stack); err != nil {
-		log.Fatalln(string(error_buffer.Bytes()), err)
-	}
-	return err
+	// if err := call(stack, pipe_stack); err != nil {
+	// 	log.Fatalln(string(error_buffer.Bytes()), err)
+	// }
+	// return err
+	return call(stack, pipe_stack)
 }
 
 func call(stack []*exec.Cmd, pipes []*io.PipeWriter) (err error) {
@@ -231,3 +232,66 @@ func ExecToFile(cli string, ofile string) error {
 	cmd.Wait()
 	return nil
 }
+
+func Spinny(sigChan chan bool) {
+	quit := false
+	for !quit {
+
+		s := "|/-\\"
+		for i := 0; i < len(s); i++ {
+			fmt.Printf("\r%c", s[i])
+			time.Sleep(100 * time.Millisecond)
+		}
+
+		select {
+		// case msg1 := <-messages:
+		// 	//fmt.Println("received", msg1)
+		// 	quit = true
+		case sig := <-sigChan:
+			quit = sig //fmt.Println("received signal", sig)
+		default:
+			//fmt.Println("not yet")
+		}
+
+	}
+	fmt.Printf("\r \r")
+}
+
+// func System3AndSpin(cmd string) error {
+// 	var errorRec error
+// 	var wg sync.WaitGroup
+// 	wg.Add(1)
+// 	//messages := make(chan string)
+// 	sigChan := make(chan bool)
+// 	errorChan := make(chan error)
+// 	go func() {
+// 		defer wg.Done()
+// 		defer close(errorChan)
+// 		defer close(sigChan)
+// 		errorChan <- System3(cmd)
+
+// 		sigChan <- true
+// 	}()
+
+// 	go func() {
+// 		quit := false
+// 		for !quit {
+
+// 			s := "|/-\\"
+// 			for i := 0; i < len(s); i++ {
+// 				fmt.Printf("\r%c", s[i])
+// 				time.Sleep(100 * time.Millisecond)
+// 			}
+// 			select {
+// 			case sig := <-sigChan:
+// 				quit = sig
+// 			default:
+// 			}
+
+// 		}
+// 		fmt.Printf("\r \r")
+// 	}()
+// 	errorRec = <-errorChan
+// 	wg.Wait()
+// 	return errorRec
+// }

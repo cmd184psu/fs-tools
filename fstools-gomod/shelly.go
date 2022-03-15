@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -352,4 +353,13 @@ func System3AndSpin(cmd string) (err error) {
 	err = <-errorChan
 	wg.Wait()
 	return
+}
+
+func Error2ExitCode(err error) int {
+	//fmt.Printf("err was %q\n", err.Error())
+	if strings.HasPrefix(err.Error(), "exit status ") {
+		r, _ := strconv.ParseInt(err.Error()[12:], 10, 32)
+		return int(r)
+	}
+	return 255
 }

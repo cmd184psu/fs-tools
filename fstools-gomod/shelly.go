@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -331,41 +332,24 @@ func Spinny(sigChan chan bool) {
 	fmt.Printf("\r \r")
 }
 
-// func System3AndSpin(cmd string) error {
-// 	var errorRec error
-// 	var wg sync.WaitGroup
-// 	wg.Add(1)
-// 	//messages := make(chan string)
-// 	sigChan := make(chan bool)
-// 	errorChan := make(chan error)
-// 	go func() {
-// 		defer wg.Done()
-// 		defer close(errorChan)
-// 		defer close(sigChan)
-// 		errorChan <- System3(cmd)
-
-// 		sigChan <- true
-// 	}()
-
-// 	go func() {
-// 		quit := false
-// 		for !quit {
-
-// 			s := "|/-\\"
-// 			for i := 0; i < len(s); i++ {
-// 				fmt.Printf("\r%c", s[i])
-// 				time.Sleep(100 * time.Millisecond)
-// 			}
-// 			select {
-// 			case sig := <-sigChan:
-// 				quit = sig
-// 			default:
-// 			}
-
-// 		}
-// 		fmt.Printf("\r \r")
-// 	}()
-// 	errorRec = <-errorChan
-// 	wg.Wait()
-// 	return errorRec
-// }
+func System3AndSpin(cmd string) (err error) {
+	//var errorRec error
+	var wg sync.WaitGroup
+	wg.Add(1)
+	//messages := make(chan string)
+	sigChan := make(chan bool)
+	errorChan := make(chan error)
+	go func() {
+		defer wg.Done()
+		defer close(errorChan)
+		defer close(sigChan)
+		e := System3(cmd)
+		sigChan <- true
+		errorChan <- e
+	}()
+	go Spinny(sigChan)
+	//errorRec = <-errorChan
+	err = <-errorChan
+	wg.Wait()
+	return
+}

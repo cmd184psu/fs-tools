@@ -31,19 +31,14 @@ func Touch(fileName string) {
 	}
 }
 
-func System3(cmd string) error {
+func System3(cmd string) (err error) {
 	arglist := strings.Split(cmd, " ")
-	//app:=arglist[0]
-
 	var b bytes.Buffer
-	if err := Popen3(&b,
+	err = Popen3(&b,
 		exec.Command(arglist[0], arglist[1:]...),
-	); err != nil {
-		log.Fatalln(err)
-		return err
-	}
+	)
 	io.Copy(os.Stdout, &b)
-	return nil
+	return
 }
 
 //was "readlines"

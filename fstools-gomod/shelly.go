@@ -16,20 +16,15 @@ import (
 	"time"
 )
 
-func Touch(fileName string) {
+func Touch(fileName string) error {
 	_, err := os.Stat(fileName)
 	if os.IsNotExist(err) {
 		file, err := os.Create(fileName)
-		if err != nil {
-			log.Fatal(err)
-		}
 		defer file.Close()
+		return err
 	} else {
 		currentTime := time.Now().Local()
-		err = os.Chtimes(fileName, currentTime, currentTime)
-		if err != nil {
-			fmt.Println(err)
-		}
+		return os.Chtimes(fileName, currentTime, currentTime)
 	}
 }
 

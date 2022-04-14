@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -14,6 +15,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/crypto/ssh"
 )
 
 func Touch(fileName string) error {
@@ -217,6 +220,57 @@ func Popen3DoubleGrep(cmd string, musthave string) ([]string, error) {
 	}
 	slice := strings.Split(b.String(), "\n")
 	return slice[:len(slice)-1], nil
+}
+
+func SSHPopenToString(hostname string, command string) (string, error) {
+	client, session, err := getsshclient(hostname)
+	if err != nil {
+		//panic(err)
+		return "", err
+	}
+	out, err := session.CombinedOutput(command)
+	if err != nil {
+		//panic(err)
+		return "", err
+	}
+	//fmt.Println(string(out))
+	client.Close()
+	return strings.TrimSpace(string(out)), nil
+}
+
+func getsshclient(host string) (*ssh.Client, *ssh.Session, error) {
+
+	key, err := ioutil.ReadFile(os.Getenv("HOME") + "/.ssh/id_rsa")
+	if err != nil {
+		log.Fatalf("unable to read private key: %v", err)
+	}
+
+	// Create the Signer for this private key.
+	signer, err := ssh.ParsePrivateKey(key)
+	if err != nil {
+		log.Fatalf("unable to parse private key: %v", err)
+	}
+	sshConfig := &ssh.ClientConfig{
+		User: os.Getenv("USER"),
+		Auth: []ssh.AuthMethod{
+			ssh.PublicKeys(signer),
+		},
+	}
+	sshConfig.SetDefaults()
+	sshConfig.HostKeyCallback = ssh.InsecureIgnoreHostKey()
+
+	client, err := ssh.Dial("tcp", host+":22", sshConfig)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	session, err := client.NewSession()
+	if err != nil {
+		client.Close()
+		return nil, nil, err
+	}
+
+	return client, session, nil
 }
 
 func DmidecodeProduct() (string, error) {

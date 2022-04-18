@@ -23,14 +23,14 @@ const private_ssh_key_default = "%s/.ssh/id_rsa"
 
 var ssh_key = ""
 
-func getPrivateSSHKey() string {
+func GetPrivateSSHKey() string {
 	if strings.EqualFold(ssh_key, "") {
 		ssh_key = fmt.Sprintf(private_ssh_key_default, os.Getenv("HOME"))
 	}
 	return ssh_key
 }
 
-func setPrivateSSHKey(newkey string) {
+func SetPrivateSSHKey(newkey string) {
 	ssh_key = newkey
 }
 

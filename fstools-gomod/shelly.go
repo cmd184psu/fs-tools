@@ -255,7 +255,7 @@ func SSHPopenToString(hostname string, command string) (string, error) {
 
 func getsshclient(host string) (*ssh.Client, *ssh.Session, error) {
 
-	key, err := ioutil.ReadFile(getPrivateSSHKey())
+	key, err := ioutil.ReadFile(GetPrivateSSHKey())
 	if err != nil {
 		log.Fatalf("unable to read private key: %v", err)
 	}

@@ -19,6 +19,21 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+const private_ssh_key_default = "%s/.ssh/id_rsa"
+
+var ssh_key = ""
+
+func getPrivateSSHKey() string {
+	if strings.EqualFold(ssh_key, "") {
+		ssh_key = fmt.Sprintf(private_ssh_key_default, os.Getenv("HOME"))
+	}
+	return ssh_key
+}
+
+func setPrivateSSHKey(newkey string) {
+	ssh_key = newkey
+}
+
 func Touch(fileName string) error {
 	_, err := os.Stat(fileName)
 	if os.IsNotExist(err) {
@@ -240,7 +255,7 @@ func SSHPopenToString(hostname string, command string) (string, error) {
 
 func getsshclient(host string) (*ssh.Client, *ssh.Session, error) {
 
-	key, err := ioutil.ReadFile(os.Getenv("HOME") + "/.ssh/id_rsa")
+	key, err := ioutil.ReadFile(getPrivateSSHKey())
 	if err != nil {
 		log.Fatalf("unable to read private key: %v", err)
 	}

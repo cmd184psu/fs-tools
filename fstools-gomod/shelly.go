@@ -75,6 +75,35 @@ func Grep(path string, musthave string, mustnothave string) ([]string, error) {
 	return lines, scanner.Err()
 }
 
+func ReadToSlice(filename string, force bool) ([]string, error) {
+	if b, err := FileExists(filename); err != nil || !b {
+		if err != nil && !force {
+			//file existance test fails entirely ( doesn't mean file doesn't exist )
+			return make([]string, 0), err
+
+		}
+		if !b && !force {
+			//file does not exist, but we want to throw an error indicating as such
+			return make([]string, 0), errors.New("file not found")
+		}
+		//ignore the fact that the file doesn't exist and return an empty array, quietly
+		return make([]string, 0), nil
+	}
+
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var lines []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	return lines, scanner.Err()
+}
+
 //formerly Execute
 func Popen3(output_buffer *bytes.Buffer, stack ...*exec.Cmd) (err error) {
 	var error_buffer bytes.Buffer
@@ -270,35 +299,35 @@ func Popen3Grep(cmd string, musthave string, mustnothave string) ([]string, erro
 	return newslice, nil
 }
 
-func Popen3DoubleGrep(cmd string, musthave string) ([]string, error) {
-	var b bytes.Buffer
-	arglist := strings.Split(cmd, " ")
+// func Popen3DoubleGrep(cmd string, musthave string) ([]string, error) {
+// 	var b bytes.Buffer
+// 	arglist := strings.Split(cmd, " ")
 
-	//check for len<2 and return null array
+// 	//check for len<2 and return null array
 
-	var greplist []string
-	if len(musthave) != 0 {
-		greplist = strings.Split(musthave, "&")
-	}
+// 	var greplist []string
+// 	if len(musthave) != 0 {
+// 		greplist = strings.Split(musthave, "&")
+// 	}
 
-	//app:=arglist[0]
-	var err error
+// 	//app:=arglist[0]
+// 	var err error
 
-	//case 1: popen and grep
-	if len(greplist) == 2 {
-		if err = Popen3(&b,
-			exec.Command(arglist[0], arglist[1:]...),
-			exec.Command("grep", greplist[0]),
-			exec.Command("grep", greplist[1]),
-		); err != nil {
-			log.Fatalln(err)
-		}
-	} else {
-		return make([]string, 0), &os.SyscallError{}
-	}
-	slice := strings.Split(b.String(), "\n")
-	return slice[:len(slice)-1], nil
-}
+// 	//case 1: popen and grep
+// 	if len(greplist) == 2 {
+// 		if err = Popen3(&b,
+// 			exec.Command(arglist[0], arglist[1:]...),
+// 			exec.Command("grep", greplist[0]),
+// 			exec.Command("grep", greplist[1]),
+// 		); err != nil {
+// 			log.Fatalln(err)
+// 		}
+// 	} else {
+// 		return make([]string, 0), &os.SyscallError{}
+// 	}
+// 	slice := strings.Split(b.String(), "\n")
+// 	return slice[:len(slice)-1], nil
+// }
 
 func SSHPopenToString(hostname string, command string) (string, error) {
 	client, session, err := getsshclient(hostname)

@@ -203,7 +203,14 @@ func Popen3Grep(cmd string, musthave string, mustnothave string) ([]string, erro
 			log.Fatalln(err)
 		}
 	}
-	slice := strings.Split(b.String(), "\n")
+	var bstring = b.String()
+	var slice []string
+	if len(strings.TrimSpace(bstring)) != 0 {
+		slice = strings.Split(b.String(), "\n")
+	}
+	if len(slice) < 2 {
+		return slice, nil
+	}
 	return slice[:len(slice)-1], nil
 }
 

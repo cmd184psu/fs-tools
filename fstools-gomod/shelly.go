@@ -158,7 +158,7 @@ func PopentoStringAwk(cmd string, awk int) (string, error) {
 	return b.String(), nil
 }
 
-func Popen3Grep(cmd string, musthave string, mustnothave string) ([]string, error) {
+func Popen3GrepFast(cmd string, musthave string, mustnothave string) ([]string, error) {
 	var b bytes.Buffer
 	arglist := strings.Split(cmd, " ")
 
@@ -212,6 +212,62 @@ func Popen3Grep(cmd string, musthave string, mustnothave string) ([]string, erro
 		return slice, nil
 	}
 	return slice[:len(slice)-1], nil
+}
+
+func Popen3Grep(cmd string, musthave string, mustnothave string) ([]string, error) {
+	var b bytes.Buffer
+	arglist := strings.Split(cmd, " ")
+
+	//check for len<2 and return null array
+	var slice []string
+	var greplist []string
+	if len(musthave) != 0 {
+		greplist = strings.Split(musthave, "&")
+	}
+	var antigreplist []string
+	if len(mustnothave) != 0 {
+		antigreplist = strings.Split(mustnothave, "&")
+	}
+	//app:=arglist[0]
+	var err error
+
+	if err = Popen3(&b, exec.Command(arglist[0], arglist[1:]...)); err != nil {
+		return slice, err
+	}
+
+	var bstring = b.String()
+
+	if len(strings.TrimSpace(bstring)) != 0 {
+		slice = strings.Split(b.String(), "\n")
+	}
+
+	newslice := make([]string, 0)
+	for i := 0; i < len(slice); i++ {
+		//case 1: there are neither musthaves nor mustnothaves
+
+		if len(strings.TrimSpace(slice[i])) != 0 {
+
+			if len(greplist) == 0 && len(antigreplist) == 0 {
+				//not really grep at all.. just expensive popen
+				newslice = append(newslice, slice[i])
+			} else if len(greplist) > 0 && len(antigreplist) == 0 {
+				// only look at musthaves
+				if SliceContains(greplist, slice[i]) {
+					newslice = append(newslice, slice[i])
+				}
+			} else if len(musthave) == 0 && len(antigreplist) > 0 {
+				if !SliceContains(antigreplist, slice[i]) {
+					newslice = append(newslice, slice[i])
+				}
+			} else {
+				if SliceContains(greplist, slice[i]) && !SliceContains(antigreplist, slice[i]) {
+					newslice = append(newslice, slice[i])
+				}
+			}
+		}
+	}
+
+	return newslice, nil
 }
 
 func Popen3DoubleGrep(cmd string, musthave string) ([]string, error) {

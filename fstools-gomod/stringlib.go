@@ -22,3 +22,13 @@ func CSVtoArray(tagcsv string) []string {
 	}
 	return tagcsv_array
 }
+
+func SliceContains(haystack []string, needle string) bool {
+	sanitized_needle := strings.TrimSpace(strings.ToLower(needle))
+	for _, h := range haystack {
+		if strings.Contains(sanitized_needle, strings.TrimSpace(strings.ToLower(h))) {
+			return true
+		}
+	}
+	return false
+}

@@ -519,3 +519,13 @@ func Error2ExitCode(err error) int {
 	}
 	return 255
 }
+
+func Hostname() (string, error) {
+	var hostname string
+	var err error
+	if hostname, err = PopentoString("hostname -s"); err != nil {
+		return "localhost", err
+	}
+
+	return strings.TrimSpace(hostname), nil
+}

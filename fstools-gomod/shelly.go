@@ -471,8 +471,9 @@ func Spinny(sigChan chan bool) {
 
 		s := "|/-\\"
 		for i := 0; i < len(s); i++ {
-			fmt.Printf("\b%c", s[i])
+			fmt.Printf("%c", s[i])
 			time.Sleep(100 * time.Millisecond)
+			fmt.Printf("\b")
 		}
 
 		select {
@@ -486,7 +487,7 @@ func Spinny(sigChan chan bool) {
 		}
 
 	}
-	fmt.Printf("\b \b")
+	fmt.Printf(" \b")
 }
 
 func System3AndSpin(cmd string) (err error) {

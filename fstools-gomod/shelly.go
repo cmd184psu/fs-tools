@@ -447,16 +447,19 @@ func GetFirstFile(rootpath string, hint string) string {
 
 func ExecToFile(cli string, ofile string) error {
 	arglist := strings.Split(cli, " ")
+	var err error
+	var outfile *os.File
 	cmd := exec.Command(arglist[0], arglist[1:]...)
 
 	// open the out file for writing
-	outfile, err := os.Create(ofile)
-	if err != nil {
-		panic(err)
+	if !strings.EqualFold(ofile, "") {
+		outfile, err = os.Create(ofile)
+		if err != nil {
+			panic(err)
+		}
+		defer outfile.Close()
+		cmd.Stdout = outfile
 	}
-	defer outfile.Close()
-	cmd.Stdout = outfile
-
 	err = cmd.Start()
 	if err != nil {
 		return err
@@ -490,7 +493,7 @@ func Spinny(sigChan chan bool) {
 	fmt.Printf(" \b")
 }
 
-func System3AndSpin(cmd string) (err error) {
+func System3AndSpin(cmd string, redirect string) (err error) {
 	//var errorRec error
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -501,7 +504,7 @@ func System3AndSpin(cmd string) (err error) {
 		defer wg.Done()
 		defer close(errorChan)
 		defer close(sigChan)
-		e := System3(cmd)
+		e := ExecToFile(cmd, redirect)
 		sigChan <- true
 		errorChan <- e
 	}()

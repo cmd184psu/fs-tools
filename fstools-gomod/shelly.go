@@ -461,11 +461,8 @@ func ExecToFile(cli string, ofile string) error {
 		cmd.Stdout = outfile
 	}
 	err = cmd.Start()
-	if err != nil {
-		return err
-	}
 	cmd.Wait()
-	return nil
+	return err
 }
 
 func Spinny(sigChan chan bool) {

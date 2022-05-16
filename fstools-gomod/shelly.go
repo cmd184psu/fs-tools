@@ -512,7 +512,7 @@ func System3AndSpin(cmd string, redirect string) (err error) {
 	//errorRec = <-errorChan
 	err = <-errorChan
 	wg.Wait()
-	return
+	return err
 }
 
 func Error2ExitCode(err error) int {

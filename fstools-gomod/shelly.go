@@ -445,9 +445,8 @@ func GetFirstFile(rootpath string, hint string) string {
 	return result
 }
 
-func ExecToFile(cli string, ofile string) error {
+func ExecToFile(cli string, ofile string) (err error) {
 	arglist := strings.Split(cli, " ")
-	var err error
 	var outfile *os.File
 	cmd := exec.Command(arglist[0], arglist[1:]...)
 
@@ -462,7 +461,7 @@ func ExecToFile(cli string, ofile string) error {
 	}
 	err = cmd.Start()
 	cmd.Wait()
-	return err
+	return
 }
 
 func Spinny(sigChan chan bool) {

@@ -446,6 +446,7 @@ func GetFirstFile(rootpath string, hint string) string {
 }
 
 func ExecToFile(cli string, ofile string) (err error) {
+	err = nil
 	arglist := strings.Split(cli, " ")
 	var outfile *os.File
 	cmd := exec.Command(arglist[0], arglist[1:]...)
@@ -460,7 +461,10 @@ func ExecToFile(cli string, ofile string) (err error) {
 		cmd.Stdout = outfile
 	}
 	err = cmd.Start()
-	cmd.Wait()
+	if err != nil {
+		return
+	}
+	err = cmd.Wait()
 	return
 }
 

@@ -459,6 +459,9 @@ func ExecToFile(cli string, ofile string) (err error) {
 		}
 		defer outfile.Close()
 		cmd.Stdout = outfile
+	} else if strings.EqualFold(ofile, "-") {
+		//io.Copy(os.Stdout, &b)
+		cmd.Stdout = os.Stdout
 	}
 	err = cmd.Start()
 	if err != nil {

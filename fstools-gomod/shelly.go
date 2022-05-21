@@ -345,6 +345,49 @@ func SSHPopenToString(hostname string, command string) (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
+func StringToFileOverSSH(outputContent string, remoteserver string, outputfile string) error {
+	fmt.Printf("want to write outputContent | %s:%s\n", remoteserver, outputfile)
+	fmt.Printf("cat outputContent | ssh %s \"cat >%s\"\n", remoteserver, outputfile)
+
+	client, session, err := getsshclient(remoteserver)
+	defer client.Close()
+	if err != nil {
+		//panic(err)
+		return err
+	}
+
+	//attempt one, using a pipe.. almost works, but blocks and does not complete
+	// stdinOut, stdinIn, err := os.Pipe()
+	// if err != nil {
+	// 	return err
+	// }
+	// defer stdinOut.Close()
+	// defer stdinIn.Close()
+
+	// stdinIn.Write([]byte(outputContent + "\n"))
+
+	// session.Stdin = stdinOut
+	// defer session.Close()
+
+	//attempt two: mimic reddit: https://www.reddit.com/r/golang/comments/j8ascn/can_i_send_eof_to_osstdin/
+	var stdin io.WriteCloser
+	stdin, err = session.StdinPipe()
+	if err != nil {
+		log.Fatalf("Unable to setup stdin for session: %v", err)
+	}
+	go func() {
+		defer stdin.Close()
+		io.Copy(stdin, bytes.NewReader([]byte(outputContent+"\n")))
+	}()
+
+	if err = session.Run("cat >" + outputfile); err != nil {
+		return err
+	}
+
+	//client.Close()
+	return nil
+}
+
 func getsshclient(host string) (*ssh.Client, *ssh.Session, error) {
 
 	key, err := ioutil.ReadFile(GetPrivateSSHKey())
@@ -459,9 +502,6 @@ func ExecToFile(cli string, ofile string) (err error) {
 		}
 		defer outfile.Close()
 		cmd.Stdout = outfile
-	} else if strings.EqualFold(ofile, "-") {
-		//io.Copy(os.Stdout, &b)
-		cmd.Stdout = os.Stdout
 	}
 	err = cmd.Start()
 	if err != nil {

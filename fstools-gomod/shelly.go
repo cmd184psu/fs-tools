@@ -75,7 +75,7 @@ func Grep(path string, musthave string, mustnothave string) ([]string, error) {
 	return lines, scanner.Err()
 }
 
-func ReadToSlice(filename string, force bool) ([]string, error) {
+func ReadFileToSlice(filename string, force bool) ([]string, error) {
 	if b, err := FileExists(filename); err != nil || !b {
 		if err != nil && !force {
 			//file existance test fails entirely ( doesn't mean file doesn't exist )
@@ -102,6 +102,22 @@ func ReadToSlice(filename string, force bool) ([]string, error) {
 		lines = append(lines, scanner.Text())
 	}
 	return lines, scanner.Err()
+}
+
+func WriteSliceToFile(filename string, content []string) error {
+	return WriteStringToFile(filename, strings.Join(content, "\n"))
+}
+
+func WriteStringToFile(filename string, content string) error {
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	if _, err = f.WriteString(content); err != nil {
+		panic(err)
+	}
+	return err
 }
 
 //formerly Execute

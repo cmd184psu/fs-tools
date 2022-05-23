@@ -345,31 +345,13 @@ func SSHPopenToString(hostname string, command string) (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
+//write otuput content (including new lines) to file outputfile (including full absolute path) on remoteserver over SSH
 func StringToFileOverSSH(outputContent string, remoteserver string, outputfile string) error {
-	fmt.Printf("want to write outputContent | %s:%s\n", remoteserver, outputfile)
-	fmt.Printf("cat outputContent | ssh %s \"cat >%s\"\n", remoteserver, outputfile)
-
 	client, session, err := getsshclient(remoteserver)
 	defer client.Close()
 	if err != nil {
-		//panic(err)
 		return err
 	}
-
-	//attempt one, using a pipe.. almost works, but blocks and does not complete
-	// stdinOut, stdinIn, err := os.Pipe()
-	// if err != nil {
-	// 	return err
-	// }
-	// defer stdinOut.Close()
-	// defer stdinIn.Close()
-
-	// stdinIn.Write([]byte(outputContent + "\n"))
-
-	// session.Stdin = stdinOut
-	// defer session.Close()
-
-	//attempt two: mimic reddit: https://www.reddit.com/r/golang/comments/j8ascn/can_i_send_eof_to_osstdin/
 	var stdin io.WriteCloser
 	stdin, err = session.StdinPipe()
 	if err != nil {
@@ -383,8 +365,6 @@ func StringToFileOverSSH(outputContent string, remoteserver string, outputfile s
 	if err = session.Run("cat >" + outputfile); err != nil {
 		return err
 	}
-
-	//client.Close()
 	return nil
 }
 

@@ -32,3 +32,7 @@ func SliceContains(haystack []string, needle string) bool {
 	}
 	return false
 }
+
+func EmptyString(s string) bool {
+	return strings.EqualFold(strings.TrimSpace(s), "")
+}

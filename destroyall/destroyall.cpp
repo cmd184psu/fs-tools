@@ -1,7 +1,7 @@
  /*
     destroyall.cpp - Seeks out all files that are identical based on an independent md5 hash.
     Prints to stdout suggested deletions.
-    Copyright (C) 2014  Chris Delezenski
+    Copyright (C) 2024  Chris Delezenski
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #include <OpenStringLib.h>
 
 #ifndef __USE__CVS__
-#define VERSION "(Part of Dev Tools) Norepeats v0.93 - 12-09-03 - written by Chris Delezenski"
+#define VERSION "(Part of Dev Tools) Destroyall v0.97 - 2-04-24 - written by Chris Delezenski"
 #else
 #define VERSION "$id$ - written by Chris Delezenski"
 #endif 
@@ -53,7 +53,7 @@ void FileList_R(cStringList &mylist, cString fullpath, cString ending,bool usedi
 	cString cmd;
 	cString file_type="f";
 	
-	if(usedirs) file_type="d";
+	if(usedirs) file_type="d -maxdepth 10";
 	else if(destroy_all_links) file_type="l";
 	
 	cmd="find \""+fullpath+"\" -type "+file_type+" -iname \""+ending+"\"";
@@ -249,7 +249,7 @@ void lookfordups(cString wildcard,bool usedirs, bool destroy_all_links, bool exe
 
 int main(int argc, char* argv[]) {
 
-	cerr<<"Sept 5th, 2020"<<endl;
+	cerr<<"Feb 4th, 2024"<<endl;
 	cArgs arguments(argc,argv,"-");
 	
 	

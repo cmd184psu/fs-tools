@@ -306,10 +306,10 @@ int main(int argc, char* argv[]) {
 	//new option: -e gives you all files; without it, limit scans to < 1 GB files
 	
 	if(!wildcard.Contains(';')) {
-		 lookfordups(wildcard,hint,arguments.IsSet("f"),arguments.IsSet("e"));
+		 lookfordups(wildcard,hint,arguments.IsSet("f"),true);
 	} else {
 		wildcardlist.FromString(wildcard,';');
-		for(int i=0; i<wildcardlist.Length(); i++) lookfordups(wildcardlist[i],hint,arguments.IsSet("f"),arguments.IsSet("e"));
+		for(int i=0; i<wildcardlist.Length(); i++) lookfordups(wildcardlist[i],hint,arguments.IsSet("f"),true);
 	}	
 	
 	return 0;
